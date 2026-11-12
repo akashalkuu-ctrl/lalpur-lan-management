@@ -11,15 +11,16 @@ body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif}
 header{background:#121d30;padding:22px;text-align:center;border-bottom:2px solid #e9b949}
 h1{color:#f5c542;margin:0;font-size:25px}
 header p{color:#aab7ca;font-size:12px}
-main{padding:16px;max-width:760px;margin:auto}
-.card{background:#142137;padding:17px;border-radius:12px;margin:14px 0;border:1px solid #293b56}
+main{padding:14px;max-width:850px;margin:auto}
+.card{background:#142137;padding:16px;border-radius:12px;margin:14px 0;border:1px solid #293b56}
 h2{font-size:17px;color:#f5c542;margin-top:0}
-button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;width:100%;margin-top:10px}
+button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;width:100%;margin-top:9px}
 .secondary{background:#34445d;color:white}
 .danger{background:#a83242;color:white}
 input{width:100%;padding:12px;margin:7px 0;background:#091321;color:white;border:1px solid #42536c;border-radius:7px}
 label{display:block;color:#c6d2e3;font-size:13px;margin-top:10px}
-.hint{font-size:12px;color:#aab7ca;line-height:1.5}
+.hint{font-size:12px;color:#aab7ca;line-height:1.6}
+.status{color:#f5c542;font-size:13px}
 .team-card{background:#0b1628;border:1px solid #3a4b65;border-radius:10px;padding:12px;margin:12px 0}
 .team-head{display:flex;align-items:center;gap:12px}
 .team-logo{width:58px;height:58px;object-fit:cover;border-radius:9px;background:#26364d}
@@ -27,61 +28,103 @@ label{display:block;color:#c6d2e3;font-size:13px;margin-top:10px}
 .player{background:#172943;padding:9px;border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12px;overflow:hidden}
 .player img{width:38px;height:38px;object-fit:cover;border-radius:50%;background:#34445d}
 .form-player{border-top:1px solid #34445d;margin-top:12px;padding-top:7px}
-.status{color:#f5c542;font-size:13px}
+video{width:100%;background:#000;border-radius:10px;margin-top:10px}
+.hidden{display:none}
+.role-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.role-buttons button{margin:0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:10px 5px;border-bottom:1px solid #34445d;text-align:center}
+th{color:#f5c542}
 footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
 </style>
 </head>
 <body>
+
 <header>
-<h1>LALPUR LAN</h1>
+<h1>🏆 LALPUR LAN</h1>
 <p>ESPORTS LIVE MANAGEMENT SYSTEM</p>
 </header>
+
 <main>
 
 <div class="card">
-<h2>🎮 BROADCAST CONTROL</h2>
-<p class="status">● BROADCAST NOT CONNECTED</p>
-<p class="hint">লাইভ ব্রডকাস্ট সংযোগ পরবর্তী ধাপে তৈরি হবে।</p>
+<h2>📱 SELECT PANEL</h2>
+<p class="hint">Observer ফোন অথবা Admin ফোন অনুযায়ী প্যানেল নির্বাচন করুন।</p>
+<div class="role-buttons">
+<button onclick="showPanel('admin')">ADMIN PANEL</button>
+<button onclick="showPanel('observer')">OBSERVER PANEL</button>
+</div>
 </div>
 
+<div id="adminPanel">
+
 <div class="card">
-<h2>📡 OBSERVER CONNECTION</h2>
-<p class="hint">Observer ফোনের স্ক্রিন শেয়ার সংযোগ পরবর্তী ধাপে তৈরি হবে।</p>
+<h2>🎮 ADMIN CONTROL</h2>
+<p class="status">● ADMIN PANEL READY</p>
+<p class="hint">এখানে টিম ম্যানেজমেন্ট, স্কোর যাচাই ও ব্রডকাস্ট কন্ট্রোল থাকবে।</p>
 </div>
 
 <div class="card">
 <h2>🏆 TEAM MANAGEMENT</h2>
-<p class="hint">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
-
+<p class="hint">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
 <button id="showForm" onclick="openForm()">＋ ADD NEW TEAM</button>
 
 <div id="teamForm" hidden>
 <label>টিমের নাম</label>
 <input id="teamName" maxlength="35" placeholder="Team Name">
-
 <label>টিমের লোগো</label>
 <input id="teamLogo" type="file" accept="image/*">
-
 <div id="playerFields"></div>
-
 <button onclick="saveTeam()">SAVE TEAM</button>
 <button class="secondary" onclick="closeForm()">CANCEL</button>
 </div>
-
 <div id="teams"><p class="hint">এখনো কোনো টিম যোগ করা হয়নি।</p></div>
 </div>
 
 <div class="card">
-<h2>📊 LIVE SCOREBOARD</h2>
-<p class="hint">লাইভ স্কোরবোর্ড পরবর্তী ধাপে যুক্ত হবে।</p>
+<h2>📊 SIX MATCH SCOREBOARD</h2>
+<p class="hint">প্রতি ম্যাচে Kill, PLC, Match Total এবং আগের ম্যাচসহ Overall Total দেখানোর ব্যবস্থা এখানে তৈরি হবে।</p>
+<table>
+<thead><tr><th>ম্যাচ</th><th>ম্যাপ</th><th>অবস্থা</th></tr></thead>
+<tbody>
+<tr><td>১</td><td>Bermuda</td><td>Pending</td></tr>
+<tr><td>২</td><td>Purgatory</td><td>Pending</td></tr>
+<tr><td>৩</td><td>Kalahari</td><td>Pending</td></tr>
+<tr><td>৪</td><td>Nexterra</td><td>Pending</td></tr>
+<tr><td>৫</td><td>Solara</td><td>Pending</td></tr>
+<tr><td>৬</td><td>Kalahari</td><td>Pending</td></tr>
+</tbody>
+</table>
 </div>
 
 <div class="card">
-<h2>▶ YOUTUBE LIVE</h2>
-<p class="hint">YouTube লাইভ সংযোগ পরবর্তী ধাপে যুক্ত হবে। Stream Key এখানে দেবেন না।</p>
+<h2>🥇 OVERALL STANDING</h2>
+<p class="hint">৬ ম্যাচ শেষে মোট Kill, PLC ও Points অনুযায়ী চূড়ান্ত অবস্থান এখানে দেখানো হবে।</p>
+</div>
+
+<div class="card">
+<h2>▶ YOUTUBE BROADCAST CONTROL</h2>
+<p class="status">● BROADCAST NOT CONNECTED</p>
+<p class="hint">Admin ফোন থেকে YouTube সম্প্রচারের সংযোগ পরবর্তী ধাপে তৈরি হবে। এখানে YouTube Stream Key লিখবেন না।</p>
+</div>
+
+</div>
+
+<div id="observerPanel" class="hidden">
+
+<div class="card">
+<h2>📡 OBSERVER CONNECTION</h2>
+<p class="status" id="observerStatus">● SCREEN NOT SHARING</p>
+<p class="hint">Observer ফোনে এই বাটনে চাপ দিয়ে স্ক্রিন শেয়ার শুরু করতে পারবেন। বর্তমানে এটি শুধু এই ফোনে Preview দেখাবে; Admin ফোনে পাঠানোর WebRTC সংযোগ এখনো তৈরি হয়নি।</p>
+<button id="startShare" onclick="startShare()">START SCREEN SHARE</button>
+<button class="danger" id="stopShare" onclick="stopShare()" disabled>STOP SCREEN SHARE</button>
+<video id="screenVideo" autoplay playsinline muted></video>
+</div>
+
 </div>
 
 </main>
+
 <footer>LALPUR LAN MANAGEMENT © 2026</footer>
 
 <script>
@@ -89,7 +132,13 @@ const KEY='lalpurLanTeamsV1';
 let teams=[];
 try{teams=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){teams=[]}
 let editing=-1;
+let screenStream=null;
 const $=id=>document.getElementById(id);
+
+function showPanel(which){
+ $('adminPanel').classList.toggle('hidden',which!=='admin');
+ $('observerPanel').classList.toggle('hidden',which!=='observer');
+}
 
 function makePlayerFields(){
  $('playerFields').innerHTML='';
@@ -100,13 +149,11 @@ function makePlayerFields(){
   $('playerFields').appendChild(box);
  }
 }
-
 makePlayerFields();
 
 function openForm(index=-1){
  if(index===-1&&teams.length>=12){
-  alert('সর্বোচ্চ ১২টি টিম যোগ করা যাবে।');
-  return;
+  alert('সর্বোচ্চ ১২টি টিম যোগ করা যাবে।');return;
  }
  editing=index;
  $('teamForm').hidden=false;
@@ -120,19 +167,16 @@ function openForm(index=-1){
   });
  }
 }
-
 function closeForm(){
  $('teamForm').hidden=true;
  $('showForm').hidden=false;
  editing=-1;
 }
-
 function readImage(file){
  return new Promise((resolve,reject)=>{
   if(!file){resolve('');return;}
   if(!file.type.startsWith('image/')){
-   reject(new Error('ছবি ফাইল নির্বাচন করুন'));
-   return;
+   reject(new Error('ছবি ফাইল নির্বাচন করুন'));return;
   }
   const reader=new FileReader();
   reader.onload=()=>{
@@ -152,100 +196,69 @@ function readImage(file){
   reader.readAsDataURL(file);
  });
 }
-
 async function saveTeam(){
  const name=$('teamName').value.trim();
  if(!name){alert('টিমের নাম লিখুন');return;}
-
  const names=[...document.querySelectorAll('.pname')].map(x=>x.value.trim());
  if(names.some(x=>!x)){
-  alert('৪ জন প্লেয়ারের নাম লিখুন।');
-  return;
+  alert('৪ জন প্লেয়ারের নাম লিখুন।');return;
  }
-
  try{
   const old=editing>=0?teams[editing]:null;
   const logoFile=$('teamLogo').files[0];
   const logo=logoFile?await readImage(logoFile):(old?.logo||'');
   const inputs=[...document.querySelectorAll('.pimage')];
   const players=[];
-
   for(let i=0;i<4;i++){
    const photo=inputs[i].files[0]
     ?await readImage(inputs[i].files[0])
     :(old?.players[i]?.photo||'');
    players.push({name:names[i],photo});
   }
-
   const item={name,logo,players};
   if(editing>=0)teams[editing]=item;
   else teams.push(item);
-
   localStorage.setItem(KEY,JSON.stringify(teams));
-  closeForm();
-  renderTeams();
+  closeForm();renderTeams();
   alert('টিম সংরক্ষণ হয়েছে।');
-
  }catch(e){
   alert(e.message||'ছবি সংরক্ষণ করা যায়নি। ছোট ছবি ব্যবহার করুন।');
  }
 }
-
 function renderTeams(){
  const root=$('teams');
  root.innerHTML='';
-
  if(!teams.length){
   root.innerHTML='<p class="hint">এখনো কোনো টিম যোগ করা হয়নি।</p>';
   return;
  }
-
  teams.forEach((t,i)=>{
   const card=document.createElement('div');
   card.className='team-card';
-
   const head=document.createElement('div');
   head.className='team-head';
-
   const logo=document.createElement('img');
-  logo.className='team-logo';
-  logo.src=t.logo||'';
-  logo.alt='Team logo';
-
+  logo.className='team-logo';logo.src=t.logo||'';
   const title=document.createElement('strong');
   title.textContent=(i+1)+'. '+t.name;
-
-  head.append(logo,title);
-  card.append(head);
-
+  head.append(logo,title);card.append(head);
   const players=document.createElement('div');
   players.className='players';
-
   t.players.forEach((p,j)=>{
    const row=document.createElement('div');
    row.className='player';
-
    const pic=document.createElement('img');
    pic.src=p.photo||'';
-   pic.alt='';
-
    const nm=document.createElement('span');
    nm.textContent=(j+1)+'. '+p.name;
-
-   row.append(pic,nm);
-   players.append(row);
+   row.append(pic,nm);players.append(row);
   });
-
   card.append(players);
-
   const edit=document.createElement('button');
-  edit.className='secondary';
-  edit.textContent='EDIT TEAM';
+  edit.className='secondary';edit.textContent='EDIT TEAM';
   edit.onclick=()=>openForm(i);
-
   const del=document.createElement('button');
-  del.className='danger';
-  del.textContent='DELETE TEAM';
+  del.className='danger';del.textContent='DELETE TEAM';
   del.onclick=()=>{
    if(confirm('এই টিমটি মুছে ফেলবেন?')){
     teams.splice(i,1);
@@ -253,15 +266,40 @@ function renderTeams(){
     renderTeams();
    }
   };
-
-  card.append(edit,del);
-  root.append(card);
+  card.append(edit,del);root.append(card);
  });
-
  $('showForm').hidden=teams.length>=12;
 }
-
 renderTeams();
+
+async function startShare(){
+ try{
+  if(!navigator.mediaDevices?.getDisplayMedia){
+   alert('এই ব্রাউজারে Screen Share সুবিধা পাওয়া যাচ্ছে না। Chrome ব্যবহার করুন।');
+   return;
+  }
+  screenStream=await navigator.mediaDevices.getDisplayMedia({
+   video:true,audio:true
+  });
+  $('screenVideo').srcObject=screenStream;
+  $('observerStatus').textContent='● SCREEN PREVIEW ACTIVE';
+  $('startShare').disabled=true;
+  $('stopShare').disabled=false;
+  screenStream.getVideoTracks()[0].addEventListener('ended',stopShare);
+ }catch(e){
+  alert('Screen Share শুরু হয়নি। আবার চেষ্টা করুন।');
+ }
+}
+function stopShare(){
+ if(screenStream){
+  screenStream.getTracks().forEach(track=>track.stop());
+  screenStream=null;
+ }
+ $('screenVideo').srcObject=null;
+ $('observerStatus').textContent='● SCREEN NOT SHARING';
+ $('startShare').disabled=false;
+ $('stopShare').disabled=true;
+}
 </script>
 </body>
 </html>
