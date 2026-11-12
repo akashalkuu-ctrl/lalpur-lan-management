@@ -8,9 +8,8 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif}
-header{background:#121d30;padding:22px;text-align:center;border-bottom:2px solid #e9b949}
-h1{color:#f5c542;margin:0;font-size:25px}
-header p{color:#aab7ca;font-size:12px}
+header{background:#121d30;padding:20px;text-align:center;border-bottom:2px solid #e9b949}
+h1{color:#f5c542;margin:0}
 main{padding:14px;max-width:850px;margin:auto}
 .card{background:#142137;padding:16px;border-radius:12px;margin:14px 0;border:1px solid #293b56}
 h2{font-size:17px;color:#f5c542;margin-top:0}
@@ -21,21 +20,15 @@ input{width:100%;padding:12px;margin:7px 0;background:#091321;color:white;border
 label{display:block;color:#c6d2e3;font-size:13px;margin-top:10px}
 .hint{font-size:12px;color:#aab7ca;line-height:1.6}
 .status{color:#f5c542;font-size:13px}
-.team-card{background:#0b1628;border:1px solid #3a4b65;border-radius:10px;padding:12px;margin:12px 0}
-.team-head{display:flex;align-items:center;gap:12px}
-.team-logo{width:58px;height:58px;object-fit:cover;border-radius:9px;background:#26364d}
-.players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
-.player{background:#172943;padding:9px;border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12px;overflow:hidden}
-.player img{width:38px;height:38px;object-fit:cover;border-radius:50%;background:#34445d}
-.form-player{border-top:1px solid #34445d;margin-top:12px;padding-top:7px}
+.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 video{width:100%;background:#000;border-radius:10px;margin-top:10px}
-.hidden{display:none}
-.role-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.role-buttons button{margin:0}
+.team-card{background:#0b1628;padding:12px;border:1px solid #3a4b65;border-radius:9px;margin:10px 0}
+.players{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{padding:10px 5px;border-bottom:1px solid #34445d;text-align:center}
+td,th{padding:10px 4px;border-bottom:1px solid #34445d;text-align:center}
 th{color:#f5c542}
-footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
+footer{text-align:center;color:#77859b;padding:20px;font-size:12px}
 </style>
 </head>
 <body>
@@ -47,43 +40,53 @@ footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
 
 <main>
 
+<!-- LOGIN -->
+<div id="loginPanel" class="card">
+<h2>🔐 ADMIN LOGIN</h2>
+<p class="hint">Firebase-এর আগে থেকে তৈরি Email ও Password দিয়ে লগইন করো।</p>
+<label>Email</label>
+<input id="email" type="email" placeholder="Admin Email">
+<label>Password</label>
+<input id="password" type="password" placeholder="Firebase Password">
+<button id="loginBtn" onclick="login()">LOGIN</button>
+<p id="loginStatus" class="status"></p>
+</div>
+
+<!-- APP -->
+<div id="appPanel" class="hidden">
+
 <div class="card">
 <h2>📱 SELECT PANEL</h2>
-<p class="hint">Observer ফোন অথবা Admin ফোন অনুযায়ী প্যানেল নির্বাচন করুন।</p>
-<div class="role-buttons">
+<div class="grid">
 <button onclick="showPanel('admin')">ADMIN PANEL</button>
 <button onclick="showPanel('observer')">OBSERVER PANEL</button>
 </div>
+<button class="secondary" onclick="logout()">LOGOUT</button>
 </div>
 
+<!-- ADMIN -->
 <div id="adminPanel">
 
 <div class="card">
 <h2>🎮 ADMIN CONTROL</h2>
-<p class="status">● ADMIN PANEL READY</p>
-<p class="hint">এখানে টিম ম্যানেজমেন্ট, স্কোর যাচাই ও ব্রডকাস্ট কন্ট্রোল থাকবে।</p>
+<p id="adminStatus" class="status">● ADMIN READY</p>
+<button onclick="startAdminConnection()">CONNECT TO OBSERVER</button>
+<button class="danger" onclick="stopConnection()">STOP CONNECTION</button>
+<video id="adminVideo" autoplay playsinline></video>
+<p class="hint">Observer ফোনে স্ক্রিন শেয়ার শুরু হলে এখানে দেখা যাবে।</p>
 </div>
 
 <div class="card">
 <h2>🏆 TEAM MANAGEMENT</h2>
 <p class="hint">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
-<button id="showForm" onclick="openForm()">＋ ADD NEW TEAM</button>
-
-<div id="teamForm" hidden>
-<label>টিমের নাম</label>
-<input id="teamName" maxlength="35" placeholder="Team Name">
-<label>টিমের লোগো</label>
-<input id="teamLogo" type="file" accept="image/*">
-<div id="playerFields"></div>
-<button onclick="saveTeam()">SAVE TEAM</button>
-<button class="secondary" onclick="closeForm()">CANCEL</button>
-</div>
-<div id="teams"><p class="hint">এখনো কোনো টিম যোগ করা হয়নি।</p></div>
+<input id="teamName" placeholder="Team Name">
+<div id="playerInputs"></div>
+<button onclick="addTeam()">ADD TEAM</button>
+<div id="teams"></div>
 </div>
 
 <div class="card">
-<h2>📊 SIX MATCH SCOREBOARD</h2>
-<p class="hint">প্রতি ম্যাচে Kill, PLC, Match Total এবং আগের ম্যাচসহ Overall Total দেখানোর ব্যবস্থা এখানে তৈরি হবে।</p>
+<h2>📊 SIX MATCHES</h2>
 <table>
 <thead><tr><th>ম্যাচ</th><th>ম্যাপ</th><th>অবস্থা</th></tr></thead>
 <tbody>
@@ -95,211 +98,342 @@ footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
 <tr><td>৬</td><td>Kalahari</td><td>Pending</td></tr>
 </tbody>
 </table>
-</div>
-
-<div class="card">
-<h2>🥇 OVERALL STANDING</h2>
-<p class="hint">৬ ম্যাচ শেষে মোট Kill, PLC ও Points অনুযায়ী চূড়ান্ত অবস্থান এখানে দেখানো হবে।</p>
-</div>
-
-<div class="card">
-<h2>▶ YOUTUBE BROADCAST CONTROL</h2>
-<p class="status">● BROADCAST NOT CONNECTED</p>
-<p class="hint">Admin ফোন থেকে YouTube সম্প্রচারের সংযোগ পরবর্তী ধাপে তৈরি হবে। এখানে YouTube Stream Key লিখবেন না।</p>
+<p class="hint">স্কোর যাচাই ও ৬ ম্যাচের Overall Standing পরবর্তী ধাপে যুক্ত হবে।</p>
 </div>
 
 </div>
 
+<!-- OBSERVER -->
 <div id="observerPanel" class="hidden">
 
 <div class="card">
-<h2>📡 OBSERVER CONNECTION</h2>
-<p class="status" id="observerStatus">● SCREEN NOT SHARING</p>
-<p class="hint">Observer ফোনে এই বাটনে চাপ দিয়ে স্ক্রিন শেয়ার শুরু করতে পারবেন। বর্তমানে এটি শুধু এই ফোনে Preview দেখাবে; Admin ফোনে পাঠানোর WebRTC সংযোগ এখনো তৈরি হয়নি।</p>
-<button id="startShare" onclick="startShare()">START SCREEN SHARE</button>
-<button class="danger" id="stopShare" onclick="stopShare()" disabled>STOP SCREEN SHARE</button>
-<video id="screenVideo" autoplay playsinline muted></video>
+<h2>📡 OBSERVER PANEL</h2>
+<p id="observerStatus" class="status">● NOT CONNECTED</p>
+<button onclick="startObserver()">START SCREEN SHARE & CONNECT</button>
+<button class="danger" onclick="stopConnection()">STOP SCREEN SHARE</button>
+<p class="hint">ফোনের Screen Broadcast অনুমতি চাইলে অনুমতি দাও।</p>
+<video id="observerVideo" autoplay playsinline muted></video>
 </div>
 
 </div>
 
+</div>
 </main>
 
 <footer>LALPUR LAN MANAGEMENT © 2026</footer>
 
-<script>
-const KEY='lalpurLanTeamsV1';
-let teams=[];
-try{teams=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){teams=[]}
-let editing=-1;
-let screenStream=null;
-const $=id=>document.getElementById(id);
+<script type="module">
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
-function showPanel(which){
- $('adminPanel').classList.toggle('hidden',which!=='admin');
- $('observerPanel').classList.toggle('hidden',which!=='observer');
-}
+import {
+ getAuth, signInWithEmailAndPassword,
+ onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-function makePlayerFields(){
- $('playerFields').innerHTML='';
- for(let i=0;i<4;i++){
-  const box=document.createElement('div');
-  box.className='form-player';
-  box.innerHTML='<label>Player '+(i+1)+' Name</label><input class="pname" maxlength="35" placeholder="Player '+(i+1)+' name"><label>Player '+(i+1)+' Photo</label><input class="pimage" type="file" accept="image/*">';
-  $('playerFields').appendChild(box);
- }
-}
-makePlayerFields();
+import {
+ getDatabase, ref, set, push, onValue,
+ onChildAdded, remove
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-function openForm(index=-1){
- if(index===-1&&teams.length>=12){
-  alert('সর্বোচ্চ ১২টি টিম যোগ করা যাবে।');return;
+const firebaseConfig = {
+ apiKey: "AIzaSyAqR7FYfkbwka-IxqM3Y4JNCFXlON__PfU",
+ authDomain: "lalpur-lan-management.firebaseapp.com",
+ databaseURL: "https://lalpur-lan-management-default-rtdb.firebaseio.com",
+ projectId: "lalpur-lan-management",
+ storageBucket: "lalpur-lan-management.firebasestorage.app",
+ messagingSenderId: "704237089803",
+ appId: "1:704237089803:web:1c9cf6a0f0fe299aaf030e"
+};
+
+const ADMIN_UID = "hkVmVU6dfHcrlgYRpWPmIdyMuS32";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const room = ref(db,"lanSessions/main");
+
+let pc = null;
+let stream = null;
+let unsubscribers = [];
+let pendingCandidates = [];
+let teams = [];
+
+const $ = id => document.getElementById(id);
+
+onAuthStateChanged(auth,user=>{
+ if(user && user.uid===ADMIN_UID){
+  $("loginPanel").classList.add("hidden");
+  $("appPanel").classList.remove("hidden");
+ }else{
+  $("appPanel").classList.add("hidden");
+  $("loginPanel").classList.remove("hidden");
+  if(user) signOut(auth);
  }
- editing=index;
- $('teamForm').hidden=false;
- $('showForm').hidden=true;
- $('teamName').value=index>=0?teams[index].name:'';
- $('teamLogo').value='';
- makePlayerFields();
- if(index>=0){
-  document.querySelectorAll('.pname').forEach((e,i)=>{
-   e.value=teams[index].players[i]?.name||'';
-  });
- }
-}
-function closeForm(){
- $('teamForm').hidden=true;
- $('showForm').hidden=false;
- editing=-1;
-}
-function readImage(file){
- return new Promise((resolve,reject)=>{
-  if(!file){resolve('');return;}
-  if(!file.type.startsWith('image/')){
-   reject(new Error('ছবি ফাইল নির্বাচন করুন'));return;
-  }
-  const reader=new FileReader();
-  reader.onload=()=>{
-   const img=new Image();
-   img.onload=()=>{
-    const canvas=document.createElement('canvas');
-    const scale=Math.min(1,400/Math.max(img.width,img.height));
-    canvas.width=Math.max(1,Math.round(img.width*scale));
-    canvas.height=Math.max(1,Math.round(img.height*scale));
-    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-    resolve(canvas.toDataURL('image/jpeg',0.65));
-   };
-   img.onerror=()=>reject(new Error('ছবিটি পড়া যায়নি'));
-   img.src=reader.result;
-  };
-  reader.onerror=()=>reject(new Error('ছবি পড়া যায়নি'));
-  reader.readAsDataURL(file);
- });
-}
-async function saveTeam(){
- const name=$('teamName').value.trim();
- if(!name){alert('টিমের নাম লিখুন');return;}
- const names=[...document.querySelectorAll('.pname')].map(x=>x.value.trim());
- if(names.some(x=>!x)){
-  alert('৪ জন প্লেয়ারের নাম লিখুন।');return;
- }
- try{
-  const old=editing>=0?teams[editing]:null;
-  const logoFile=$('teamLogo').files[0];
-  const logo=logoFile?await readImage(logoFile):(old?.logo||'');
-  const inputs=[...document.querySelectorAll('.pimage')];
-  const players=[];
-  for(let i=0;i<4;i++){
-   const photo=inputs[i].files[0]
-    ?await readImage(inputs[i].files[0])
-    :(old?.players[i]?.photo||'');
-   players.push({name:names[i],photo});
-  }
-  const item={name,logo,players};
-  if(editing>=0)teams[editing]=item;
-  else teams.push(item);
-  localStorage.setItem(KEY,JSON.stringify(teams));
-  closeForm();renderTeams();
-  alert('টিম সংরক্ষণ হয়েছে।');
- }catch(e){
-  alert(e.message||'ছবি সংরক্ষণ করা যায়নি। ছোট ছবি ব্যবহার করুন।');
- }
-}
-function renderTeams(){
- const root=$('teams');
- root.innerHTML='';
- if(!teams.length){
-  root.innerHTML='<p class="hint">এখনো কোনো টিম যোগ করা হয়নি।</p>';
+});
+
+window.login = async function(){
+ const email=$("email").value.trim();
+ const password=$("password").value;
+ if(!email || !password){
+  $("loginStatus").textContent="Email ও Password লিখুন।";
   return;
  }
- teams.forEach((t,i)=>{
-  const card=document.createElement('div');
-  card.className='team-card';
-  const head=document.createElement('div');
-  head.className='team-head';
-  const logo=document.createElement('img');
-  logo.className='team-logo';logo.src=t.logo||'';
-  const title=document.createElement('strong');
-  title.textContent=(i+1)+'. '+t.name;
-  head.append(logo,title);card.append(head);
-  const players=document.createElement('div');
-  players.className='players';
-  t.players.forEach((p,j)=>{
-   const row=document.createElement('div');
-   row.className='player';
-   const pic=document.createElement('img');
-   pic.src=p.photo||'';
-   const nm=document.createElement('span');
-   nm.textContent=(j+1)+'. '+p.name;
-   row.append(pic,nm);players.append(row);
-  });
-  card.append(players);
-  const edit=document.createElement('button');
-  edit.className='secondary';edit.textContent='EDIT TEAM';
-  edit.onclick=()=>openForm(i);
-  const del=document.createElement('button');
-  del.className='danger';del.textContent='DELETE TEAM';
-  del.onclick=()=>{
-   if(confirm('এই টিমটি মুছে ফেলবেন?')){
-    teams.splice(i,1);
-    localStorage.setItem(KEY,JSON.stringify(teams));
-    renderTeams();
-   }
-  };
-  card.append(edit,del);root.append(card);
- });
- $('showForm').hidden=teams.length>=12;
-}
-renderTeams();
+ $("loginStatus").textContent="লগইন হচ্ছে...";
+ try{
+  const result=await signInWithEmailAndPassword(auth,email,password);
+  if(result.user.uid!==ADMIN_UID){
+   await signOut(auth);
+   throw new Error("এই অ্যাকাউন্ট Admin নয়।");
+  }
+  $("loginStatus").textContent="লগইন সফল।";
+ }catch(e){
+  $("loginStatus").textContent="লগইন হয়নি: "+e.message;
+ }
+};
 
-async function startShare(){
+window.logout=()=>signOut(auth);
+
+window.showPanel=function(which){
+ $("adminPanel").classList.toggle("hidden",which!=="admin");
+ $("observerPanel").classList.toggle("hidden",which!=="observer");
+};
+
+function makePC(){
+ pc=new RTCPeerConnection({
+  iceServers:[
+   {urls:"stun:stun.l.google.com:19302"}
+  ]
+ });
+ return pc;
+}
+
+function clearListeners(){
+ unsubscribers.forEach(fn=>fn());
+ unsubscribers=[];
+ pendingCandidates=[];
+}
+
+async function addCandidate(candidate){
+ if(!pc)return;
+ const ice=new RTCIceCandidate(candidate);
+ if(pc.remoteDescription){
+  try{await pc.addIceCandidate(ice)}catch(e){console.log(e)}
+ }else{
+  pendingCandidates.push(ice);
+ }
+}
+
+async function flushCandidates(){
+ for(const ice of pendingCandidates){
+  try{await pc.addIceCandidate(ice)}catch(e){console.log(e)}
+ }
+ pendingCandidates=[];
+}
+
+window.startAdminConnection=async function(){
+ if(!auth.currentUser)return;
+ await stopConnection();
+
+ $("adminStatus").textContent="● OBSERVER-এর অপেক্ষায়...";
+ await set(room,{status:"waiting"});
+
+ makePC();
+
+ pc.ontrack=e=>{
+  $("adminVideo").srcObject=e.streams[0];
+  $("adminStatus").textContent="● LIVE VIDEO CONNECTED";
+ };
+
+ pc.onicecandidate=e=>{
+  if(e.candidate){
+   push(ref(db,"lanSessions/main/adminCandidates"),e.candidate.toJSON());
+  }
+ };
+
+ const answerListener=onValue(
+  ref(db,"lanSessions/main/answer"),
+  async snap=>{
+   if(snap.exists() && !pc.currentRemoteDescription){
+    try{
+     await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
+     await flushCandidates();
+     $("adminStatus").textContent="● ANSWER RECEIVED";
+    }catch(e){console.log(e)}
+   }
+  }
+ );
+ unsubscribers.push(answerListener);
+
+ const candidateListener=onChildAdded(
+  ref(db,"lanSessions/main/observerCandidates"),
+  snap=>addCandidate(snap.val())
+ );
+ unsubscribers.push(candidateListener);
+
+ const offer=await pc.createOffer();
+ await pc.setLocalDescription(offer);
+ await set(ref(db,"lanSessions/main/offer"),{
+  type:offer.type,
+  sdp:offer.sdp
+ });
+
+ $("adminStatus").textContent="● OFFER SENT — OBSERVER CONNECT";
+};
+
+window.startObserver=async function(){
+ if(!auth.currentUser)return;
+ await stopConnection();
+
  try{
   if(!navigator.mediaDevices?.getDisplayMedia){
-   alert('এই ব্রাউজারে Screen Share সুবিধা পাওয়া যাচ্ছে না। Chrome ব্যবহার করুন।');
+   alert("এই ব্রাউজারে Screen Share পাওয়া যাচ্ছে না। Chrome ব্যবহার করুন।");
    return;
   }
-  screenStream=await navigator.mediaDevices.getDisplayMedia({
-   video:true,audio:true
+
+  stream=await navigator.mediaDevices.getDisplayMedia({
+   video:true,
+   audio:true
   });
-  $('screenVideo').srcObject=screenStream;
-  $('observerStatus').textContent='● SCREEN PREVIEW ACTIVE';
-  $('startShare').disabled=true;
-  $('stopShare').disabled=false;
-  screenStream.getVideoTracks()[0].addEventListener('ended',stopShare);
+
+  $("observerVideo").srcObject=stream;
+  $("observerStatus").textContent="● SCREEN READY — CONNECTING";
+
+  makePC();
+
+  stream.getTracks().forEach(track=>{
+   pc.addTrack(track,stream);
+  });
+
+  pc.onicecandidate=e=>{
+   if(e.candidate){
+    push(ref(db,"lanSessions/main/observerCandidates"),e.candidate.toJSON());
+   }
+  };
+
+  const candidateListener=onChildAdded(
+   ref(db,"lanSessions/main/adminCandidates"),
+   snap=>addCandidate(snap.val())
+  );
+  unsubscribers.push(candidateListener);
+
+  let handled=false;
+  const offerListener=onValue(
+   ref(db,"lanSessions/main/offer"),
+   async snap=>{
+    if(!snap.exists() || handled)return;
+    handled=true;
+    try{
+     await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
+     await flushCandidates();
+
+     const answer=await pc.createAnswer();
+     await pc.setLocalDescription(answer);
+
+     await set(ref(db,"lanSessions/main/answer"),{
+      type:answer.type,
+      sdp:answer.sdp
+     });
+
+     $("observerStatus").textContent="● CONNECTED — SHARING";
+    }catch(e){
+     $("observerStatus").textContent="● CONNECTION ERROR";
+     console.log(e);
+    }
+   }
+  );
+  unsubscribers.push(offerListener);
+
+  stream.getVideoTracks()[0].addEventListener("ended",stopConnection);
  }catch(e){
-  alert('Screen Share শুরু হয়নি। আবার চেষ্টা করুন।');
+  $("observerStatus").textContent="● SHARE NOT STARTED";
+  alert("Screen Share শুরু হয়নি। আবার চেষ্টা করুন।");
+ }
+};
+
+window.stopConnection=async function(){
+ clearListeners();
+
+ if(stream){
+  stream.getTracks().forEach(t=>t.stop());
+  stream=null;
+ }
+
+ if(pc){
+  pc.close();
+  pc=null;
+ }
+
+ $("adminVideo").srcObject=null;
+ $("observerVideo").srcObject=null;
+ $("adminStatus").textContent="● CONNECTION STOPPED";
+ $("observerStatus").textContent="● NOT CONNECTED";
+};
+
+function makePlayerInputs(){
+ $("playerInputs").innerHTML="";
+ for(let i=1;i<=4;i++){
+  const input=document.createElement("input");
+  input.className="playerName";
+  input.placeholder="Player "+i+" Name";
+  $("playerInputs").appendChild(input);
  }
 }
-function stopShare(){
- if(screenStream){
-  screenStream.getTracks().forEach(track=>track.stop());
-  screenStream=null;
- }
- $('screenVideo').srcObject=null;
- $('observerStatus').textContent='● SCREEN NOT SHARING';
- $('startShare').disabled=false;
- $('stopShare').disabled=true;
+makePlayerInputs();
+
+function renderTeams(){
+ const root=$("teams");
+ root.innerHTML="";
+ teams.forEach((team,index)=>{
+  const card=document.createElement("div");
+  card.className="team-card";
+  const title=document.createElement("h3");
+  title.textContent=(index+1)+". "+team.name;
+  const players=document.createElement("div");
+  players.className="players";
+  team.players.forEach(name=>{
+   const p=document.createElement("p");
+   p.textContent=name;
+   players.appendChild(p);
+  });
+  const del=document.createElement("button");
+  del.className="danger";
+  del.textContent="DELETE TEAM";
+  del.onclick=()=>{
+   teams.splice(index,1);
+   localStorage.setItem("lalpurLanTeamsV1",JSON.stringify(teams));
+   renderTeams();
+  };
+  card.append(title,players,del);
+  root.appendChild(card);
+ });
 }
+
+try{
+ teams=JSON.parse(localStorage.getItem("lalpurLanTeamsV1")||"[]");
+}catch(e){teams=[]}
+renderTeams();
+
+window.addTeam=function(){
+ const name=$("teamName").value.trim();
+ const players=[...document.querySelectorAll(".playerName")]
+  .map(x=>x.value.trim());
+
+ if(!name || players.some(x=>!x)){
+  alert("টিমের নাম ও ৪ জনের নাম লিখুন।");
+  return;
+ }
+ if(teams.length>=12){
+  alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে।");
+  return;
+ }
+
+ teams.push({name,players});
+ localStorage.setItem("lalpurLanTeamsV1",JSON.stringify(teams));
+ $("teamName").value="";
+ makePlayerInputs();
+ renderTeams();
+ alert("টিম যোগ হয়েছে।");
+};
 </script>
 </body>
 </html>
