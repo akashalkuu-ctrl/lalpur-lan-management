@@ -11,11 +11,22 @@ body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif}
 header{background:#121d30;padding:22px;text-align:center;border-bottom:2px solid #e9b949}
 h1{color:#f5c542;margin:0;font-size:25px}
 header p{color:#aab7ca;font-size:12px}
-main{padding:16px;max-width:650px;margin:auto}
+main{padding:16px;max-width:760px;margin:auto}
 .card{background:#142137;padding:17px;border-radius:12px;margin:14px 0;border:1px solid #293b56}
 h2{font-size:17px;color:#f5c542;margin-top:0}
 button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;width:100%;margin-top:10px}
+.secondary{background:#34445d;color:white}
+.danger{background:#a83242;color:white}
 input{width:100%;padding:12px;margin:7px 0;background:#091321;color:white;border:1px solid #42536c;border-radius:7px}
+label{display:block;color:#c6d2e3;font-size:13px;margin-top:10px}
+.hint{font-size:12px;color:#aab7ca;line-height:1.5}
+.team-card{background:#0b1628;border:1px solid #3a4b65;border-radius:10px;padding:12px;margin:12px 0}
+.team-head{display:flex;align-items:center;gap:12px}
+.team-logo{width:58px;height:58px;object-fit:cover;border-radius:9px;background:#26364d}
+.players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.player{background:#172943;padding:9px;border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12px;overflow:hidden}
+.player img{width:38px;height:38px;object-fit:cover;border-radius:50%;background:#34445d}
+.form-player{border-top:1px solid #34445d;margin-top:12px;padding-top:7px}
 .status{color:#f5c542;font-size:13px}
 footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
 </style>
@@ -26,51 +37,231 @@ footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
 <p>ESPORTS LIVE MANAGEMENT SYSTEM</p>
 </header>
 <main>
+
 <div class="card">
 <h2>🎮 BROADCAST CONTROL</h2>
-<p class="status" id="status">● NOT CONNECTED</p>
-<button onclick="alert('Broadcast setup পরবর্তী ধাপে যুক্ত হবে')">START BROADCAST</button>
+<p class="status">● BROADCAST NOT CONNECTED</p>
+<p class="hint">লাইভ ব্রডকাস্ট সংযোগ পরবর্তী ধাপে তৈরি হবে।</p>
 </div>
 
 <div class="card">
 <h2>📡 OBSERVER CONNECTION</h2>
-<p>Observer ফোনের লিংক তৈরি করার ব্যবস্থা</p>
-<button onclick="alert('Observer Link পরবর্তী ধাপে যুক্ত হবে')">CREATE OBSERVER LINK</button>
+<p class="hint">Observer ফোনের স্ক্রিন শেয়ার সংযোগ পরবর্তী ধাপে তৈরি হবে।</p>
 </div>
 
 <div class="card">
 <h2>🏆 TEAM MANAGEMENT</h2>
-<input id="team" placeholder="Team Name">
-<input id="logo" placeholder="Team Logo Image URL">
-<button onclick="addTeam()">ADD TEAM</button>
-<div id="teams"></div>
+<p class="hint">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
+
+<button id="showForm" onclick="openForm()">＋ ADD NEW TEAM</button>
+
+<div id="teamForm" hidden>
+<label>টিমের নাম</label>
+<input id="teamName" maxlength="35" placeholder="Team Name">
+
+<label>টিমের লোগো</label>
+<input id="teamLogo" type="file" accept="image/*">
+
+<div id="playerFields"></div>
+
+<button onclick="saveTeam()">SAVE TEAM</button>
+<button class="secondary" onclick="closeForm()">CANCEL</button>
+</div>
+
+<div id="teams"><p class="hint">এখনো কোনো টিম যোগ করা হয়নি।</p></div>
 </div>
 
 <div class="card">
 <h2>📊 LIVE SCOREBOARD</h2>
-<p>ম্যাচের স্কোরবোর্ড পরবর্তী ধাপে যুক্ত হবে।</p>
+<p class="hint">লাইভ স্কোরবোর্ড পরবর্তী ধাপে যুক্ত হবে।</p>
 </div>
 
 <div class="card">
 <h2>▶ YOUTUBE LIVE</h2>
-<input placeholder="YouTube Stream Key" type="password">
-<button onclick="alert('YouTube Broadcast পরবর্তী ধাপে যুক্ত হবে')">CONNECT YOUTUBE</button>
+<p class="hint">YouTube লাইভ সংযোগ পরবর্তী ধাপে যুক্ত হবে। Stream Key এখানে দেবেন না।</p>
 </div>
+
 </main>
 <footer>LALPUR LAN MANAGEMENT © 2026</footer>
+
 <script>
-function addTeam(){
-let name=document.getElementById('team').value.trim();
-let logo=document.getElementById('logo').value.trim();
-if(!name){alert('Team Name লিখুন');return;}
-let div=document.createElement('div');
-div.style.padding='10px';
-div.style.borderBottom='1px solid #42536c';
-div.textContent=name;
-document.getElementById('teams').appendChild(div);
-document.getElementById('team').value='';
-document.getElementById('logo').value='';
+const KEY='lalpurLanTeamsV1';
+let teams=[];
+try{teams=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){teams=[]}
+let editing=-1;
+const $=id=>document.getElementById(id);
+
+function makePlayerFields(){
+ $('playerFields').innerHTML='';
+ for(let i=0;i<4;i++){
+  const box=document.createElement('div');
+  box.className='form-player';
+  box.innerHTML='<label>Player '+(i+1)+' Name</label><input class="pname" maxlength="35" placeholder="Player '+(i+1)+' name"><label>Player '+(i+1)+' Photo</label><input class="pimage" type="file" accept="image/*">';
+  $('playerFields').appendChild(box);
+ }
 }
+
+makePlayerFields();
+
+function openForm(index=-1){
+ if(index===-1&&teams.length>=12){
+  alert('সর্বোচ্চ ১২টি টিম যোগ করা যাবে।');
+  return;
+ }
+ editing=index;
+ $('teamForm').hidden=false;
+ $('showForm').hidden=true;
+ $('teamName').value=index>=0?teams[index].name:'';
+ $('teamLogo').value='';
+ makePlayerFields();
+ if(index>=0){
+  document.querySelectorAll('.pname').forEach((e,i)=>{
+   e.value=teams[index].players[i]?.name||'';
+  });
+ }
+}
+
+function closeForm(){
+ $('teamForm').hidden=true;
+ $('showForm').hidden=false;
+ editing=-1;
+}
+
+function readImage(file){
+ return new Promise((resolve,reject)=>{
+  if(!file){resolve('');return;}
+  if(!file.type.startsWith('image/')){
+   reject(new Error('ছবি ফাইল নির্বাচন করুন'));
+   return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+   const img=new Image();
+   img.onload=()=>{
+    const canvas=document.createElement('canvas');
+    const scale=Math.min(1,400/Math.max(img.width,img.height));
+    canvas.width=Math.max(1,Math.round(img.width*scale));
+    canvas.height=Math.max(1,Math.round(img.height*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    resolve(canvas.toDataURL('image/jpeg',0.65));
+   };
+   img.onerror=()=>reject(new Error('ছবিটি পড়া যায়নি'));
+   img.src=reader.result;
+  };
+  reader.onerror=()=>reject(new Error('ছবি পড়া যায়নি'));
+  reader.readAsDataURL(file);
+ });
+}
+
+async function saveTeam(){
+ const name=$('teamName').value.trim();
+ if(!name){alert('টিমের নাম লিখুন');return;}
+
+ const names=[...document.querySelectorAll('.pname')].map(x=>x.value.trim());
+ if(names.some(x=>!x)){
+  alert('৪ জন প্লেয়ারের নাম লিখুন।');
+  return;
+ }
+
+ try{
+  const old=editing>=0?teams[editing]:null;
+  const logoFile=$('teamLogo').files[0];
+  const logo=logoFile?await readImage(logoFile):(old?.logo||'');
+  const inputs=[...document.querySelectorAll('.pimage')];
+  const players=[];
+
+  for(let i=0;i<4;i++){
+   const photo=inputs[i].files[0]
+    ?await readImage(inputs[i].files[0])
+    :(old?.players[i]?.photo||'');
+   players.push({name:names[i],photo});
+  }
+
+  const item={name,logo,players};
+  if(editing>=0)teams[editing]=item;
+  else teams.push(item);
+
+  localStorage.setItem(KEY,JSON.stringify(teams));
+  closeForm();
+  renderTeams();
+  alert('টিম সংরক্ষণ হয়েছে।');
+
+ }catch(e){
+  alert(e.message||'ছবি সংরক্ষণ করা যায়নি। ছোট ছবি ব্যবহার করুন।');
+ }
+}
+
+function renderTeams(){
+ const root=$('teams');
+ root.innerHTML='';
+
+ if(!teams.length){
+  root.innerHTML='<p class="hint">এখনো কোনো টিম যোগ করা হয়নি।</p>';
+  return;
+ }
+
+ teams.forEach((t,i)=>{
+  const card=document.createElement('div');
+  card.className='team-card';
+
+  const head=document.createElement('div');
+  head.className='team-head';
+
+  const logo=document.createElement('img');
+  logo.className='team-logo';
+  logo.src=t.logo||'';
+  logo.alt='Team logo';
+
+  const title=document.createElement('strong');
+  title.textContent=(i+1)+'. '+t.name;
+
+  head.append(logo,title);
+  card.append(head);
+
+  const players=document.createElement('div');
+  players.className='players';
+
+  t.players.forEach((p,j)=>{
+   const row=document.createElement('div');
+   row.className='player';
+
+   const pic=document.createElement('img');
+   pic.src=p.photo||'';
+   pic.alt='';
+
+   const nm=document.createElement('span');
+   nm.textContent=(j+1)+'. '+p.name;
+
+   row.append(pic,nm);
+   players.append(row);
+  });
+
+  card.append(players);
+
+  const edit=document.createElement('button');
+  edit.className='secondary';
+  edit.textContent='EDIT TEAM';
+  edit.onclick=()=>openForm(i);
+
+  const del=document.createElement('button');
+  del.className='danger';
+  del.textContent='DELETE TEAM';
+  del.onclick=()=>{
+   if(confirm('এই টিমটি মুছে ফেলবেন?')){
+    teams.splice(i,1);
+    localStorage.setItem(KEY,JSON.stringify(teams));
+    renderTeams();
+   }
+  };
+
+  card.append(edit,del);
+  root.append(card);
+ });
+
+ $('showForm').hidden=teams.length>=12;
+}
+
+renderTeams();
 </script>
 </body>
 </html>
