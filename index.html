@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LALPUR LAN MANAGEMENT</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif}
+header{background:#121d30;padding:22px;text-align:center;border-bottom:2px solid #e9b949}
+h1{color:#f5c542;margin:0;font-size:25px}
+header p{color:#aab7ca;font-size:12px}
+main{padding:16px;max-width:650px;margin:auto}
+.card{background:#142137;padding:17px;border-radius:12px;margin:14px 0;border:1px solid #293b56}
+h2{font-size:17px;color:#f5c542;margin-top:0}
+button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;width:100%;margin-top:10px}
+input{width:100%;padding:12px;margin:7px 0;background:#091321;color:white;border:1px solid #42536c;border-radius:7px}
+.status{color:#f5c542;font-size:13px}
+footer{text-align:center;color:#77859b;padding:25px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<h1>LALPUR LAN</h1>
+<p>ESPORTS LIVE MANAGEMENT SYSTEM</p>
+</header>
+<main>
+<div class="card">
+<h2>🎮 BROADCAST CONTROL</h2>
+<p class="status" id="status">● NOT CONNECTED</p>
+<button onclick="alert('Broadcast setup পরবর্তী ধাপে যুক্ত হবে')">START BROADCAST</button>
+</div>
+
+<div class="card">
+<h2>📡 OBSERVER CONNECTION</h2>
+<p>Observer ফোনের লিংক তৈরি করার ব্যবস্থা</p>
+<button onclick="alert('Observer Link পরবর্তী ধাপে যুক্ত হবে')">CREATE OBSERVER LINK</button>
+</div>
+
+<div class="card">
+<h2>🏆 TEAM MANAGEMENT</h2>
+<input id="team" placeholder="Team Name">
+<input id="logo" placeholder="Team Logo Image URL">
+<button onclick="addTeam()">ADD TEAM</button>
+<div id="teams"></div>
+</div>
+
+<div class="card">
+<h2>📊 LIVE SCOREBOARD</h2>
+<p>ম্যাচের স্কোরবোর্ড পরবর্তী ধাপে যুক্ত হবে।</p>
+</div>
+
+<div class="card">
+<h2>▶ YOUTUBE LIVE</h2>
+<input placeholder="YouTube Stream Key" type="password">
+<button onclick="alert('YouTube Broadcast পরবর্তী ধাপে যুক্ত হবে')">CONNECT YOUTUBE</button>
+</div>
+</main>
+<footer>LALPUR LAN MANAGEMENT © 2026</footer>
+<script>
+function addTeam(){
+let name=document.getElementById('team').value.trim();
+let logo=document.getElementById('logo').value.trim();
+if(!name){alert('Team Name লিখুন');return;}
+let div=document.createElement('div');
+div.style.padding='10px';
+div.style.borderBottom='1px solid #42536c';
+div.textContent=name;
+document.getElementById('teams').appendChild(div);
+document.getElementById('team').value='';
+document.getElementById('logo').value='';
+}
+</script>
+</body>
+</html>
