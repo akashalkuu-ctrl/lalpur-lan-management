@@ -33,6 +33,7 @@ th{color:#f5c542}
 input.score{min-width:65px;width:65px}
 select.place{min-width:90px;width:90px}
 .champion{color:#f5c542;font-size:20px;text-align:center}
+#liveVideo{width:100%;background:#000;border-radius:10px;min-height:180px}
 </style>
 </head>
 <body>
@@ -49,7 +50,7 @@ select.place{min-width:90px;width:90px}
 <p class="small">Firebase Admin Email ও Password দিয়ে লগইন করো।</p>
 <input id="email" type="email" placeholder="Admin Email">
 <input id="password" type="password" placeholder="Admin Password">
-<button onclick="login()">LOGIN</button>
+<button id="loginBtn">LOGIN</button>
 <p id="loginStatus" class="status"></p>
 </div>
 
@@ -61,10 +62,22 @@ select.place{min-width:90px;width:90px}
 <button onclick="show('scores')">MATCH SCORING</button>
 <button onclick="show('standing')">OVERALL STANDING</button>
 <button onclick="show('live')">LIVE SCOREBOARD</button>
+<button onclick="show('observer')">OBSERVER LIVE</button>
 </div>
 <button class="secondary" onclick="logout()">LOGOUT</button>
 <p class="small">Firebase Sync: <span id="syncStatus">Connecting...</span></p>
 </div>
+
+<section id="observer" class="hidden">
+<div class="card">
+<h2>📡 OBSERVER LIVE SCREEN</h2>
+<p class="small">Observer ফোনে Screen Share চালু করার পর এখানে Connect চাপো।</p>
+<p id="videoStatus" class="status">● NOT CONNECTED</p>
+<video id="liveVideo" autoplay playsinline controls></video>
+<button id="connectBtn">CONNECT OBSERVER</button>
+<button id="disconnectBtn" class="danger">DISCONNECT</button>
+</div>
+</section>
 
 <section id="teams">
 <div class="card">
@@ -72,7 +85,6 @@ select.place{min-width:90px;width:90px}
 <p class="small">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার। ছবি পরে যোগ করা যাবে।</p>
 <input id="teamName" placeholder="Team Name">
 <input id="teamLogo" placeholder="Team Logo Image URL (optional)">
-
 <div id="playerForm"></div>
 <button onclick="addTeam()">ADD TEAM</button>
 </div>
@@ -95,7 +107,7 @@ select.place{min-width:90px;width:90px}
 <option value="m5">Match 5 - Solara</option>
 <option value="m6">Match 6 - Kalahari</option>
 </select>
-<p class="small">প্রতিটি টিমের Kill এবং Placement লিখে Save Scores চাপো। Kill = 1 Point।</p>
+<p class="small">Kill = 1 Point। Placement অনুযায়ী PLC Point যোগ হবে।</p>
 <div id="scoreRows"></div>
 <button onclick="saveScores()">SAVE MATCH SCORES</button>
 </div>
@@ -149,7 +161,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 import {
- getDatabase,ref,set,onValue
+ getDatabase,ref,set,onValue,push,onChildAdded
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
 const firebaseConfig={
@@ -169,7 +181,7 @@ const db=getDatabase(appFirebase);
 
 let teams={};
 let scores={};
-let ready=false;
+let syncStarted=false;
 
 const matches=[
  ["m1","Bermuda"],["m2","Purgatory"],
@@ -178,8 +190,8 @@ const matches=[
 ];
 
 const plc={1:12,2:9,3:8,4:7,5:6,6:5,7:4,8:3,9:2,10:1,11:0,12:0};
-
 const $=id=>document.getElementById(id);
+const room="lanSessions/main";
 
 function setStatus(t){$("syncStatus").textContent=t}
 
@@ -187,7 +199,10 @@ onAuthStateChanged(auth,user=>{
  if(user && user.uid===ADMIN_UID){
   $("login").classList.add("hidden");
   $("app").classList.remove("hidden");
-  startSync();
+  if(!syncStarted){
+   syncStarted=true;
+   startSync();
+  }
  }else{
   $("app").classList.add("hidden");
   $("login").classList.remove("hidden");
@@ -195,10 +210,12 @@ onAuthStateChanged(auth,user=>{
  }
 });
 
-window.login=async()=>{
+$("loginBtn").onclick=async()=>{
  $("loginStatus").textContent="লগইন হচ্ছে...";
  try{
-  const r=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+  const r=await signInWithEmailAndPassword(
+   auth,$("email").value.trim(),$("password").value
+  );
   if(r.user.uid!==ADMIN_UID){
    await signOut(auth);
    throw new Error("এই অ্যাকাউন্ট Admin নয়।");
@@ -208,10 +225,14 @@ window.login=async()=>{
  }
 };
 
-window.logout=()=>signOut(auth);
+window.logout=async()=>{
+ await disconnectObserver();
+ await signOut(auth);
+};
 
 function startSync(){
  setStatus("Connecting...");
+
  onValue(ref(db,"teams/roster"),s=>{
   teams=s.val()||{};
   renderTeams();
@@ -229,7 +250,7 @@ function startSync(){
 }
 
 window.show=id=>{
- ["teams","scores","standing","live"].forEach(x=>{
+ ["teams","scores","standing","live","observer"].forEach(x=>{
   $(x).classList.toggle("hidden",x!==id);
  });
  if(id==="scores")renderScores();
@@ -250,10 +271,21 @@ window.addTeam=async()=>{
  const name=$("teamName").value.trim();
  const names=[...document.querySelectorAll(".pname")].map(x=>x.value.trim());
  const photos=[...document.querySelectorAll(".pphoto")].map(x=>x.value.trim());
- if(!name||names.some(x=>!x)){alert("টিমের নাম ও ৪ জনের নাম লিখুন।");return}
- if(Object.keys(teams).length>=12){alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে।");return}
+
+ if(!name||names.some(x=>!x)){
+  alert("টিমের নাম ও ৪ জনের নাম লিখুন।");return;
+ }
+ if(Object.keys(teams).length>=12){
+  alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে।");return;
+ }
+
  const id="team_"+Date.now();
- const team={name,logo:$("teamLogo").value.trim(),players:names.map((n,i)=>({name:n,photo:photos[i]}))};
+ const team={
+  name,
+  logo:$("teamLogo").value.trim(),
+  players:names.map((n,i)=>({name:n,photo:photos[i]||""}))
+ };
+
  try{
   await set(ref(db,"teams/roster/"+id),team);
   $("teamName").value="";
@@ -266,16 +298,22 @@ window.addTeam=async()=>{
 window.editTeam=async id=>{
  const t=teams[id];
  if(!t)return;
+
  const name=prompt("Team Name",t.name);
  if(name===null)return;
- const updated={...t,name:name.trim()||t.name,players:[...t.players]};
+
+ const updated={...t,name:name.trim()||t.name,players:[...(t.players||[])]};
+
  for(let i=0;i<4;i++){
-  const n=prompt("Player "+(i+1)+" Name",t.players[i]?.name||"");
+  const n=prompt("Player "+(i+1)+" Name",t.players?.[i]?.name||"");
   if(n===null)return;
-  updated.players[i]={...updated.players[i],name:n};
+  updated.players[i]={...(updated.players[i]||{}),name:n};
  }
- try{await set(ref(db,"teams/roster/"+id),updated);alert("পরিবর্তন সেভ হয়েছে।")}
- catch(e){alert(e.message)}
+
+ try{
+  await set(ref(db,"teams/roster/"+id),updated);
+  alert("পরিবর্তন সেভ হয়েছে।");
+ }catch(e){alert(e.message)}
 };
 
 window.deleteTeam=async id=>{
@@ -289,17 +327,22 @@ window.deleteTeam=async id=>{
 function renderTeams(){
  const root=$("teamList");
  root.innerHTML="";
+
  Object.entries(teams).forEach(([id,t],i)=>{
   const box=document.createElement("div");
   box.className="team";
+
   const logo=document.createElement("img");
   logo.src=t.logo||"";
   logo.alt="Team Logo";
+
   const title=document.createElement("h3");
   title.textContent=(i+1)+". "+t.name;
   box.append(logo,title);
+
   const players=document.createElement("div");
   players.className="players";
+
   (t.players||[]).forEach(p=>{
    const row=document.createElement("div");
    row.className="player";
@@ -311,58 +354,84 @@ function renderTeams(){
    row.append(img,span);
    players.append(row);
   });
+
   const edit=document.createElement("button");
   edit.textContent="EDIT TEAM";
   edit.onclick=()=>editTeam(id);
+
   const del=document.createElement("button");
   del.textContent="DELETE";
   del.className="danger";
   del.onclick=()=>deleteTeam(id);
+
   box.append(players,edit,del);
   root.append(box);
  });
- if(!Object.keys(teams).length)root.textContent="এখনো কোনো টিম যোগ করা হয়নি।";
+
+ if(!Object.keys(teams).length){
+  root.textContent="এখনো কোনো টিম যোগ করা হয়নি।";
+ }
 }
 
 function renderScores(){
  const id=$("matchSelect").value;
  const root=$("scoreRows");
  if(!root)return;
+
  root.innerHTML="";
+
  Object.entries(teams).forEach(([teamId,t])=>{
   const old=scores[teamId]?.[id]||{};
   const row=document.createElement("div");
   row.className="team";
+
   const title=document.createElement("b");
   title.textContent=t.name;
+
   const grid=document.createElement("div");
   grid.className="grid";
+
   const kill=document.createElement("input");
   kill.className="score";
-  kill.type="number";kill.min="0";kill.max="99";
-  kill.placeholder="Kills";kill.value=old.kills??0;
-  kill.dataset.team=teamId;kill.dataset.field="kills";
+  kill.type="number";
+  kill.min="0";
+  kill.max="99";
+  kill.placeholder="Kills";
+  kill.value=old.kills??0;
+  kill.dataset.team=teamId;
+  kill.dataset.field="kills";
+
   const place=document.createElement("select");
   place.className="place";
-  place.dataset.team=teamId;place.dataset.field="placement";
-  place.innerHTML='<option value="0">Placement</option>'+Array.from({length:12},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+' Place</option>').join("");
+  place.dataset.team=teamId;
+  place.dataset.field="placement";
+  place.innerHTML='<option value="0">Placement</option>'+
+   Array.from({length:12},(_,i)=>
+    '<option value="'+(i+1)+'">'+(i+1)+' Place</option>'
+   ).join("");
+
   place.value=old.placement??0;
   grid.append(kill,place);
   row.append(title,grid);
   root.append(row);
  });
- if(!Object.keys(teams).length)root.textContent="আগে Team Management থেকে টিম যোগ করো।";
+
+ if(!Object.keys(teams).length){
+  root.textContent="আগে Team Management থেকে টিম যোগ করো।";
+ }
 }
 
 window.saveScores=async()=>{
  const match=$("matchSelect").value;
  const inputs=[...document.querySelectorAll("#scoreRows [data-team]")];
  const updates={};
+
  inputs.forEach(x=>{
   const id=x.dataset.team;
   updates[id]??={};
   updates[id][x.dataset.field]=Number(x.value)||0;
  });
+
  try{
   for(const [id,value] of Object.entries(updates)){
    await set(ref(db,"teams/scores/"+id+"/"+match),value);
@@ -375,15 +444,19 @@ function getTotals(){
  return Object.entries(teams).map(([id,t])=>{
   let kills=0,totalPlc=0,total=0;
   const perMatch={};
+
   matches.forEach(([m])=>{
    const s=scores[id]?.[m]||{};
    const k=Number(s.kills)||0;
    const p=Number(s.placement)||0;
    const pp=plc[p]||0;
-   kills+=k;totalPlc+=pp;
+
+   kills+=k;
+   totalPlc+=pp;
    perMatch[m]=k+pp;
    total+=k+pp;
   });
+
   return {id,name:t.name,kills,totalPlc,total,perMatch};
  }).sort((a,b)=>b.total-a.total||b.kills-a.kills);
 }
@@ -394,25 +467,203 @@ function renderStanding(){
  const live=$("liveRows");
  const matchBody=$("matchRows");
  if(!body)return;
+
  body.innerHTML="";
  live.innerHTML="";
  matchBody.innerHTML="";
+
  list.forEach((t,i)=>{
   const tr=document.createElement("tr");
+
   [i+1,t.name,t.kills,t.totalPlc,t.total].forEach(v=>{
-   const td=document.createElement("td");td.textContent=v;tr.append(td);
+   const td=document.createElement("td");
+   td.textContent=v;
+   tr.append(td);
   });
+
   body.append(tr);
-  const lr=tr.cloneNode(true);live.append(lr);
+  live.append(tr.cloneNode(true));
+
   const mr=document.createElement("tr");
-  const name=document.createElement("td");name.textContent=t.name;mr.append(name);
+  const name=document.createElement("td");
+  name.textContent=t.name;
+  mr.append(name);
+
   matches.forEach(([m])=>{
-   const td=document.createElement("td");td.textContent=t.perMatch[m];mr.append(td);
+   const td=document.createElement("td");
+   td.textContent=t.perMatch[m];
+   mr.append(td);
   });
+
   matchBody.append(mr);
  });
- $("champion").textContent=list.length?"🏆 Champion: "+list[0].name:"এখনো কোনো টিম নেই";
+
+ $("champion").textContent=list.length?
+  "🏆 Champion: "+list[0].name:
+  "এখনো কোনো টিম নেই";
 }
+
+/* ADMIN WEBRTC RECEIVER */
+
+let adminPC=null;
+let adminListeners=[];
+let adminPending=[];
+let remoteStream=null;
+
+function videoStatus(text){
+ $("videoStatus").textContent="● "+text;
+}
+
+function clearAdminListeners(){
+ adminListeners.forEach(fn=>fn());
+ adminListeners=[];
+ adminPending=[];
+}
+
+async function addAdminCandidate(data){
+ if(!adminPC||!data)return;
+
+ const candidate=new RTCIceCandidate(data);
+
+ if(adminPC.remoteDescription){
+  try{
+   await adminPC.addIceCandidate(candidate);
+  }catch(e){console.log(e)}
+ }else{
+  adminPending.push(candidate);
+ }
+}
+
+async function flushAdminCandidates(){
+ for(const c of adminPending){
+  try{
+   await adminPC.addIceCandidate(c);
+  }catch(e){console.log(e)}
+ }
+ adminPending=[];
+}
+
+async function connectObserver(){
+
+ if(!auth.currentUser||auth.currentUser.uid!==ADMIN_UID){
+  alert("আগে Admin Login করো।");
+  return;
+ }
+
+ await disconnectObserver();
+
+ try{
+  videoStatus("CONNECTING...");
+
+  adminPC=new RTCPeerConnection({
+   iceServers:[
+    {urls:"stun:stun.l.google.com:19302"}
+   ]
+  });
+
+  remoteStream=new MediaStream();
+  $("liveVideo").srcObject=remoteStream;
+
+  adminPC.ontrack=event=>{
+   event.streams[0]?.getTracks().forEach(track=>{
+    remoteStream.addTrack(track);
+   });
+   $("liveVideo").play().catch(()=>{});
+   videoStatus("VIDEO RECEIVING");
+  };
+
+  adminPC.onconnectionstatechange=()=>{
+   if(adminPC){
+    videoStatus("CONNECTION: "+adminPC.connectionState);
+   }
+  };
+
+  adminPC.onicecandidate=event=>{
+   if(event.candidate&&adminPC){
+    push(
+     ref(db,room+"/adminCandidates"),
+     event.candidate.toJSON()
+    );
+   }
+  };
+
+  await set(ref(db,room+"/adminCandidates"),null);
+  await set(ref(db,room+"/offer"),null);
+  await set(ref(db,room+"/answer"),null);
+
+  const candidateListener=onChildAdded(
+   ref(db,room+"/observerCandidates"),
+   snap=>addAdminCandidate(snap.val())
+  );
+  adminListeners.push(candidateListener);
+
+  let answerHandled=false;
+
+  const answerListener=onValue(
+   ref(db,room+"/answer"),
+   async snap=>{
+    if(!snap.exists()||answerHandled||!adminPC)return;
+
+    answerHandled=true;
+
+    try{
+     await adminPC.setRemoteDescription(
+      new RTCSessionDescription(snap.val())
+     );
+     await flushAdminCandidates();
+     videoStatus("ANSWER RECEIVED — CONNECTING");
+    }catch(e){
+     answerHandled=false;
+     videoStatus("ANSWER ERROR");
+     console.log(e);
+    }
+   }
+  );
+  adminListeners.push(answerListener);
+
+  const offer=await adminPC.createOffer();
+  await adminPC.setLocalDescription(offer);
+
+  await set(ref(db,room+"/offer"),{
+   type:offer.type,
+   sdp:offer.sdp
+  });
+
+  videoStatus("OFFER SENT — WAITING FOR OBSERVER");
+
+ }catch(e){
+  videoStatus("CONNECTION FAILED");
+  console.log(e);
+  alert("সংযোগ শুরু হয়নি: "+e.message);
+ }
+}
+
+async function disconnectObserver(){
+
+ clearAdminListeners();
+
+ if(adminPC){
+  adminPC.close();
+  adminPC=null;
+ }
+
+ remoteStream=null;
+ $("liveVideo").srcObject=null;
+
+ try{
+  await set(ref(db,room+"/offer"),null);
+  await set(ref(db,room+"/answer"),null);
+  await set(ref(db,room+"/adminCandidates"),null);
+ }catch(e){
+  console.log(e);
+ }
+
+ videoStatus("NOT CONNECTED");
+}
+
+$("connectBtn").onclick=connectObserver;
+$("disconnectBtn").onclick=disconnectObserver;
+
 </script>
 </body>
 </html>
