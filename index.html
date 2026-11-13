@@ -1,373 +1,198 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LALPUR LAN MANAGEMENT</title>
-
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#080d18;color:#fff;font-family:Arial,sans-serif}
-header{background:#121d30;padding:18px;text-align:center;border-bottom:2px solid #e9b949}
-h1{color:#f5c542;margin:0}
-main{max-width:1000px;margin:auto;padding:12px}
-.card{background:#142137;border:1px solid #34445d;border-radius:12px;padding:15px;margin:13px 0}
-h2{color:#f5c542;font-size:18px}
-input,select{width:100%;padding:11px;margin:5px 0;background:#091321;color:white;border:1px solid #42536c;border-radius:7px}
-button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;margin:5px 0;cursor:pointer}
-.secondary{background:#34445d;color:white}
-.danger{background:#a83242;color:white}
-.green{background:#16bd80;color:#06150f}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.players{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.team{background:#0b1628;padding:12px;border:1px solid #34445d;border-radius:9px;margin:10px 0}
-.team img{width:55px;height:55px;object-fit:cover;border-radius:50%;background:#26364c}
-.player{display:flex;align-items:center;gap:8px;font-size:13px}
-.player img{width:35px;height:35px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-td,th{padding:9px 4px;border-bottom:1px solid #34445d;text-align:center}
-th{color:#f5c542}
-.tablewrap{overflow-x:auto}
-.small{font-size:12px;color:#aab7ca;line-height:1.6}
-.status{color:#f5c542}
-.hidden{display:none!important}
-input.score{min-width:65px;width:65px}
-select.place{min-width:90px;width:90px}
-.champion{color:#f5c542;font-size:20px;text-align:center}
-video{width:100%;background:#000;border-radius:10px;min-height:180px}
-
-/* BROADCAST DESIGN */
-.broadcast-screen{
- position:relative;
- width:100%;
- aspect-ratio:16/9;
- min-height:260px;
- overflow:hidden;
- background:#03070d;
- border:2px solid #e5ad35;
- border-radius:10px;
-}
-#broadcastVideo{
- position:absolute;
- inset:0;
- width:100%;
- height:100%;
- min-height:0;
- object-fit:contain;
- background:#000;
- border-radius:0;
-}
-.broadcast-top{
- position:absolute;
- top:0;left:0;right:0;
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:5px;
- padding:7px;
- background:#071323ed;
- border-bottom:2px solid #e5ad35;
- font-size:clamp(9px,1.5vw,15px);
- font-weight:bold;
-}
-.broadcast-brand{color:#f5c542}
-.broadcast-live{color:#ff5555}
-.broadcast-left{
- position:absolute;
- top:52px;left:7px;
- width:27%;
- background:#071323e8;
- border:1px solid #e5ad35;
- border-radius:6px;
- padding:5px;
-}
-.broadcast-right{
- position:absolute;
- top:52px;right:7px;
- width:28%;
- background:#071323e8;
- border:1px solid #e5ad35;
- border-radius:6px;
- padding:5px;
-}
-.broadcast-bottom{
- position:absolute;
- bottom:7px;left:7px;
- width:42%;
- background:#071323ed;
- border:1px solid #e5ad35;
- border-radius:6px;
- padding:6px;
-}
-.broadcast-map{
- position:absolute;
- bottom:7px;right:7px;
- width:20%;
- height:22%;
- background:#071323ed;
- border:1px solid #e5ad35;
- border-radius:6px;
- overflow:hidden;
-}
-.broadcast-map img{width:100%;height:100%;object-fit:contain}
-.broadcast-screen h3{
- margin:0 0 5px;
- color:#f5c542;
- font-size:clamp(8px,1.3vw,13px);
-}
-.broadcast-screen table{font-size:clamp(7px,1.1vw,11px)}
-.broadcast-screen td,.broadcast-screen th{padding:3px 2px}
-.feed-item{
- font-size:clamp(7px,1vw,11px);
- padding:3px;
- border-bottom:1px solid #34445d;
-}
-@media(max-width:550px){
- .broadcast-screen{min-height:210px}
- .broadcast-left,.broadcast-right{top:45px}
- .broadcast-top{padding:5px}
- .broadcast-bottom{width:45%}
- .broadcast-map{width:20%;height:20%}
-}
+:root{--bg:#080d18;--panel:#121d30;--panel2:#192941;--line:#2b3d57;--txt:#f4f7fb;--muted:#a9b8cc;--accent:#28a7ff;--green:#22c58b;--red:#ff6577}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:Arial,"Noto Sans Bengali",sans-serif}
+header{padding:16px;background:#101b2d;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0 0 10px}
+small,.muted{color:var(--muted)}button,input,select,textarea{font:inherit}
+button{border:0;border-radius:8px;background:var(--accent);color:#00101d;padding:10px 14px;font-weight:700;cursor:pointer}
+button.secondary{background:#30445f;color:#fff}button.danger{background:#a83245;color:#fff}button.success{background:#147b5b;color:#fff}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:#091321;color:#fff;margin:5px 0 12px}
+label{font-size:13px;color:var(--muted)}.wrap{max-width:1200px;margin:auto;padding:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.tabs{display:flex;gap:7px;overflow:auto;padding:12px 16px;background:#0d1727;position:sticky;top:0;z-index:5}
+.tabs button{white-space:nowrap}.tabs button.active{background:#fff;color:#07111e}
+.hidden{display:none!important}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.team{display:flex;gap:12px;align-items:center}.team img{width:48px;height:48px;object-fit:cover;border-radius:10px;background:#26364b}
+table{width:100%;border-collapse:collapse;min-width:580px}th,td{padding:9px;text-align:center;border-bottom:1px solid var(--line)}th{color:#9fcfff;background:#0d192a}
+.tablewrap{overflow:auto}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#263b55;font-size:12px}
+#login{max-width:420px;margin:10vh auto}.stat{font-size:24px;font-weight:bold}.note{font-size:13px;color:var(--muted);line-height:1.6}
+.playergrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#broadcastScreen{background:#060b13;border:2px solid #2e91d7;border-radius:12px;padding:14px}
+.bcastrow{display:flex;justify-content:space-between;gap:8px;padding:8px;border-bottom:1px solid #26364b}
+@media(max-width:520px){.wrap{padding:10px}.panel{padding:12px}.playergrid{grid-template-columns:1fr}}
 </style>
 </head>
-
 <body>
 <header>
-<h1>🏆 LALPUR LAN</h1>
-<p>ESPORTS LIVE MANAGEMENT SYSTEM</p>
+<h1>🏆 LALPUR LAN MANAGEMENT</h1>
+<div class="row" style="flex:0 1 auto">
+<span id="status" class="pill">সংযোগ হচ্ছে…</span>
+<button id="logoutBtn" class="secondary hidden">লগআউট</button>
+</div>
 </header>
 
-<main>
+<section id="login" class="panel">
+<h2>Admin Login</h2>
+<p class="note">শুধু অনুমোদিত Admin অ্যাকাউন্ট দিয়ে প্রবেশ করুন।</p>
+<label>ইমেইল</label>
+<input id="email" type="email" autocomplete="username" placeholder="Admin email">
+<label>পাসওয়ার্ড</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="Password">
+<button id="loginBtn" style="width:100%">লগইন</button>
+<p id="loginMsg" class="note"></p>
+</section>
 
-<div id="login" class="card">
-<h2>🔐 ADMIN LOGIN</h2>
-<p class="small">Firebase Admin Email ও Password দিয়ে লগইন করো।</p>
-<input id="email" type="email" placeholder="Admin Email">
-<input id="password" type="password" placeholder="Admin Password">
-<button id="loginBtn">LOGIN</button>
-<p id="loginStatus" class="status"></p>
-</div>
+<main id="app" class="hidden">
+<nav class="tabs">
+<button data-tab="home" class="active">ড্যাশবোর্ড</button>
+<button data-tab="teams">টিম</button>
+<button data-tab="matches">ম্যাচ স্কোর</button>
+<button data-tab="standing">Overall Standing</button>
+<button data-tab="broadcast">Broadcast</button>
+</nav>
 
-<div id="app" class="hidden">
-
-<div class="card">
+<div class="wrap">
+<section id="home" class="tabpage">
 <div class="grid">
-<button onclick="show('teams')">TEAM MANAGEMENT</button>
-<button onclick="show('scores')">MATCH SCORING</button>
-<button onclick="show('standing')">OVERALL STANDING</button>
-<button onclick="show('live')">LIVE SCOREBOARD</button>
-<button onclick="show('observer')">OBSERVER LIVE</button>
-<button onclick="show('broadcast')">🔴 TOURNAMENT BROADCAST</button>
+<div class="panel"><small>মোট টিম</small><div class="stat" id="teamCount">0</div></div>
+<div class="panel"><small>মোট ম্যাচ</small><div class="stat">6</div></div>
+<div class="panel"><small>টুর্নামেন্ট</small><div class="stat" style="font-size:18px">LALPUR LAN</div></div>
 </div>
-<button class="secondary" onclick="logout()">LOGOUT</button>
-<p class="small">Firebase Sync: <span id="syncStatus">Connecting...</span></p>
+<div class="panel">
+<h2>ম্যাচ সূচি</h2>
+<div id="matchSchedule" class="grid"></div>
 </div>
-
-<!-- OBSERVER -->
-<section id="observer" class="hidden">
-<div class="card">
-<h2>📡 OBSERVER LIVE SCREEN</h2>
-<p class="small">Observer ফোনে Screen Share চালু করার পর এখানে Connect চাপো।</p>
-<p id="videoStatus" class="status">● NOT CONNECTED</p>
-<video id="liveVideo" autoplay playsinline controls></video>
-<button id="connectBtn">CONNECT OBSERVER</button>
-<button id="disconnectBtn" class="danger">DISCONNECT</button>
+<div class="panel">
+<h2>Observer / Screen Share</h2>
+<p class="note">অন্য ফোনে Observer পেজ খুলে স্ক্রিন শেয়ার চালু করতে পারো। YouTube লাইভের জন্য PRISM Live Studio ব্যবহার করো।</p>
+<a href="observer.html" target="_blank" style="color:#6dc4ff">Observer পেজ খুলুন ↗</a>
 </div>
 </section>
 
-<!-- TEAM MANAGEMENT -->
-<section id="teams">
-<div class="card">
-<h2>🏆 ADD NEW TEAM</h2>
-<p class="small">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
-<input id="teamName" placeholder="Team Name">
-<input id="teamLogo" placeholder="Team Logo Image URL (optional)">
-<div id="playerForm"></div>
-<button onclick="addTeam()">ADD TEAM</button>
+<section id="teams" class="tabpage hidden">
+<div class="panel">
+<h2>টিম যোগ / সম্পাদনা</h2>
+<input id="teamId" type="hidden">
+<label>টিমের নাম</label>
+<input id="teamName" placeholder="Team name">
+<label>টিমের Logo Image URL</label>
+<input id="teamLogo" placeholder="https://...">
+<div class="playergrid" id="playerInputs"></div>
+<div class="row">
+<button id="saveTeam">টিম সেভ করুন</button>
+<button class="secondary" id="clearTeam">ফর্ম পরিষ্কার</button>
 </div>
-<div class="card">
-<h2>📋 TEAM LIST</h2>
-<div id="teamList">Loading...</div>
+<p class="note">সর্বোচ্চ ১২টি টিম, প্রতি টিমে ৪ জন খেলোয়াড়। ছবি GitHub-এ আপলোড করে তার সরাসরি image URL দিন।</p>
+</div>
+<div class="panel">
+<h2>টিম তালিকা</h2>
+<div id="teamList"></div>
 </div>
 </section>
 
-<!-- MATCH SCORING -->
-<section id="scores" class="hidden">
-<div class="card">
-<h2>🎮 MATCH SCORING</h2>
+<section id="matches" class="tabpage hidden">
+<div class="panel">
+<h2>ম্যাচ স্কোর আপডেট</h2>
 <label>ম্যাচ নির্বাচন</label>
-<select id="matchSelect" onchange="renderScores()">
-<option value="m1">Match 1 - Bermuda</option>
-<option value="m2">Match 2 - Purgatory</option>
-<option value="m3">Match 3 - Kalahari</option>
-<option value="m4">Match 4 - Nexterra</option>
-<option value="m5">Match 5 - Solara</option>
-<option value="m6">Match 6 - Kalahari</option>
-</select>
-<p class="small">Kill = 1 Point। Placement অনুযায়ী PLC Point যোগ হবে।</p>
-<div id="scoreRows"></div>
-<button onclick="saveScores()">SAVE MATCH SCORES</button>
-</div>
-</section>
-
-<!-- OVERALL STANDING -->
-<section id="standing" class="hidden">
-<div class="card">
-<h2>🥇 OVERALL STANDING</h2>
-<div id="champion" class="champion"></div>
+<select id="matchSelect"></select>
+<p class="note">Kill = ১ পয়েন্ট। Placement পয়েন্ট: ১ম ১২, ২য় ৯, ৩য় ৮, ৪র্থ ৭, ৫ম ৬, ৬ষ্ঠ ৫, ৭ম ৪, ৮ম ৩, ৯ম ২, ১০ম ১, ১১/১২তম ০।</p>
 <div class="tablewrap">
 <table>
-<thead><tr><th>Rank</th><th>Team</th><th>Total Kill</th><th>PLC</th><th>Total Point</th></tr></thead>
+<thead><tr><th>টিম</th><th>Kill</th><th>Placement</th><th>Kill Point</th><th>Place Point</th><th>Total</th></tr></thead>
+<tbody id="scoreRows"></tbody>
+</table>
+</div>
+<button id="saveScores" class="success" style="margin-top:12px">এই ম্যাচের স্কোর সেভ করুন</button>
+<span id="scoreMsg" class="note"></span>
+</div>
+</section>
+
+<section id="standing" class="tabpage hidden">
+<div class="panel">
+<h2>Overall Standing</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Rank</th><th>Team</th><th>Total Kill</th><th>Placement Point</th><th>Total Point</th></tr></thead>
 <tbody id="standingRows"></tbody>
 </table>
 </div>
 </div>
-<div class="card">
-<h2>📊 MATCH WISE POINTS</h2>
-<div class="tablewrap">
-<table>
-<thead><tr><th>Team</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th><th>M6</th></tr></thead>
-<tbody id="matchRows"></tbody>
-</table>
-</div>
-</div>
 </section>
 
-<!-- LIVE SCOREBOARD -->
-<section id="live" class="hidden">
-<div class="card">
-<h2>🔴 LIVE SCOREBOARD</h2>
-<p class="small">Admin-এর সেভ করা স্কোর এখানে আপডেট হবে।</p>
-<div class="tablewrap">
-<table>
-<thead><tr><th>Rank</th><th>Team</th><th>Kill</th><th>PLC</th><th>Total</th></tr></thead>
-<tbody id="liveRows"></tbody>
-</table>
-</div>
-</div>
-</section>
-
-<!-- BROADCAST ADMIN + SCREEN -->
-<section id="broadcast" class="hidden">
-
-<div class="card">
-<h2>🔴 TOURNAMENT BROADCAST SCREEN</h2>
-<p class="small">এই স্ক্রিনে গেমের ভিডিওর উপর টুর্নামেন্টের তথ্য দেখা যাবে। PRISM Live দিয়ে ফোনের স্ক্রিন সম্প্রচার করা যাবে।</p>
-
-<div class="broadcast-screen">
-
-<video id="broadcastVideo" autoplay playsinline muted></video>
-
-<div class="broadcast-top">
- <span class="broadcast-brand">🏆 LALPUR LAN</span>
- <span id="outGame">GAME 1</span>
- <span id="outTime">12:50</span>
- <span id="outAlive">36 ALIVE</span>
- <span class="broadcast-live">● LIVE</span>
-</div>
-
-<div class="broadcast-left">
- <h3>GAME STANDINGS — ELIMS</h3>
- <table>
- <thead><tr><th>#</th><th>TEAM</th><th>KILLS</th></tr></thead>
- <tbody id="outTeamKills"></tbody>
- </table>
-</div>
-
-<div class="broadcast-right">
- <h3>🔫 KILL FEED</h3>
- <div id="outKillFeed"></div>
-</div>
-
-<div class="broadcast-bottom">
- <h3 id="outPlayerTitle">PLAYER SCOREBOARD</h3>
- <div id="outPlayerKills"></div>
- <p id="outCurrentPlayer" style="font-size:clamp(8px,1vw,11px);margin:4px 0;color:#f5c542">SPECTATING: -</p>
- <p id="outArea" style="font-size:clamp(8px,1vw,11px);margin:3px 0">AREA: -</p>
-</div>
-
-<div class="broadcast-map">
- <img id="outMap" class="hidden" alt="Mini Map">
- <div id="mapPlaceholder" style="font-size:10px;text-align:center;padding:8px;color:#aab7ca">MINI MAP</div>
-</div>
-
-</div>
-</div>
-
-<div class="card">
-<h2>⚙️ BROADCAST ADMIN CONTROL</h2>
-<p class="small">এখানে তথ্য পরিবর্তন করে SAVE BROADCAST চাপবে।</p>
-
-<label>Game Number</label>
-<select id="bcGame">
-<option>GAME 1</option><option>GAME 2</option>
-<option>GAME 3</option><option>GAME 4</option>
-<option>GAME 5</option><option>GAME 6</option>
-</select>
-
-<label>সময় বাকি</label>
-<input id="bcTime" placeholder="যেমন: 12:50">
-
+<section id="broadcast" class="tabpage hidden">
+<div class="panel">
+<h2>Broadcast Control</h2>
 <div class="grid">
-<div>
-<label>জীবিত প্লেয়ার</label>
-<input id="bcAlivePlayers" type="number" min="0" placeholder="36">
+<div><label>বর্তমান ম্যাচ</label><select id="bMatch"></select></div>
+<div><label>Remaining Time</label><input id="bTime" placeholder="যেমন 12:45"></div>
+<div><label>Alive Teams</label><input id="bAliveTeams" type="number" min="0" max="12" value="12"></div>
+<div><label>Alive Players</label><input id="bAlivePlayers" type="number" min="0" max="48" value="48"></div>
+<div><label>Current Area</label><input id="bArea" placeholder="যেমন Peak"></div>
+<div><label>Current Spectated Player</label><input id="bSpectator" placeholder="Player name"></div>
 </div>
-<div>
-<label>জীবিত টিম</label>
-<input id="bcAliveTeams" type="number" min="0" placeholder="10">
-</div>
-</div>
-
-<label>বর্তমান এরিয়া</label>
-<input id="bcArea" placeholder="যেমন: Zipway">
-
-<label>বর্তমানে দেখা হচ্ছে যে প্লেয়ার</label>
-<input id="bcCurrentPlayer" placeholder="যেমন: XP.Z4CK">
-
-<label>Mini Map Image URL</label>
-<input id="bcMap" placeholder="Map image URL (optional)">
-
-<button onclick="renderBroadcastTeamInputs()" class="secondary">REFRESH TEAM KILL LIST</button>
-<h2>🏆 ১২ টিমের KILL UPDATE</h2>
-<div id="bcTeamKills"></div>
-
-<h2>👤 PLAYER KILL UPDATE</h2>
-<label>টিম নির্বাচন</label>
-<select id="bcPlayerTeam" onchange="renderBroadcastPlayerInputs()">
-<option value="">টিম নির্বাচন করো</option>
-</select>
-<div id="bcPlayerKills"></div>
-
-<h2>⚔️ KILL FEED UPDATE</h2>
-<input id="bcKiller" placeholder="যে Player Kill করেছে">
-<input id="bcVictim" placeholder="যে Player eliminated হয়েছে">
-<button onclick="addKillFeed()" class="secondary">ADD KILL FEED</button>
-<div id="bcFeedAdmin" class="small"></div>
-
-<button class="green" onclick="saveBroadcast()">💾 SAVE BROADCAST</button>
-<p id="bcStatus" class="status"></p>
+<label>Kill Feed (সর্বশেষ ঘটনা)</label>
+<input id="bKillFeed" placeholder="Team A eliminated Team B">
+<label>Mini Map Image URL (ঐচ্ছিক)</label>
+<input id="bMap" placeholder="https://...">
+<button id="saveBroadcast">Broadcast তথ্য আপডেট</button>
 </div>
 
+<div class="panel">
+<h2>Live Overlay Preview</h2>
+<div id="broadcastScreen">
+<div class="row">
+<div><b id="ovMatch">MATCH 1</b><div class="note" id="ovArea">Area: —</div></div>
+<div style="text-align:right"><b id="ovTime">00:00</b><div class="note"><span id="ovAliveT">12</span> Teams / <span id="ovAliveP">48</span> Players</div></div>
+</div>
+<p id="ovSpectator" class="note">Spectating: —</p>
+<p id="ovFeed" class="pill">Kill Feed: —</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Team</th><th>Kill</th><th>Match Point</th><th>Status</th></tr></thead>
+<tbody id="ovTeams"></tbody>
+</table>
+</div>
+<h3 style="margin-top:14px">OVERALL STANDING</h3>
+<div id="ovStanding"></div>
+</div>
+<p class="note">এই পেজটি PRISM Live Studio-তে browser/source হিসেবে দেখিয়ে সম্প্রচার করা যায়। অ্যাপ নিজে YouTube-এ ভিডিও পাঠায় না।</p>
+</div>
+
+<div class="panel">
+<h2>Free OCR Screen Reader (পরীক্ষামূলক)</h2>
+<p class="note">এটি বিনামূল্যের ব্রাউজার OCR পরীক্ষা—AI নয়। শেয়ার করা গেম স্ক্রিনের দৃশ্যমান লেখা পড়ার চেষ্টা করবে। Kill/Elimination নিজে থেকে নির্ভরযোগ্যভাবে শনাক্ত বা স্কোরে যোগ করবে না; OCR ফল দেখে Admin স্কোর আপডেট করবেন।</p>
+<div class="row">
+<button id="startCapture">স্ক্রিন শেয়ার শুরু</button>
+<button id="stopCapture" class="danger" disabled>শেয়ার বন্ধ</button>
+<button id="scanFrame" class="success" disabled>এখনকার স্ক্রিন পড়ুন</button>
+</div>
+<p id="ocrStatus" class="note">স্ক্রিন শেয়ার শুরু করতে বোতাম চাপুন। ব্রাউজার অনুমতি চাইলে গেম স্ক্রিন নির্বাচন করুন।</p>
+<video id="captureVideo" autoplay playsinline muted style="width:100%;max-height:260px;background:#000;border-radius:8px"></video>
+<canvas id="captureCanvas" class="hidden"></canvas>
+<label>OCR থেকে পাওয়া লেখা (পরীক্ষা করে নিন)</label>
+<textarea id="ocrOutput" rows="7" placeholder="স্ক্রিনের লেখা এখানে দেখা যাবে…" readonly></textarea>
+<p class="note">ফ্রি OCR ইঞ্জিন প্রথমবার ইন্টারনেট থেকে ডাউনলোড হবে। Android/Chrome-এ স্ক্রিন শেয়ার অপশন ডিভাইস ও ব্রাউজারভেদে নাও পাওয়া যেতে পারে। স্ক্রিনের লেখা পরিষ্কার না হলে ফল ভুল হতে পারে।</p>
+</div>
+
+<div class="panel">
+<h2>AI / Automation অবস্থা</h2>
+<p class="note">বর্তমানে এই অ্যাপে ফ্রি OCR দিয়ে লেখা পড়ার পরীক্ষামূলক ব্যবস্থা যোগ করা হয়েছে। এটি পূর্ণ AI Vision নয় এবং স্বয়ংক্রিয় Kill/Elimination গণনা করে না। কোনো পেইড API বা টাকা খরচের সার্ভিস যুক্ত করা হয়নি। ভবিষ্যতে নির্ভরযোগ্য স্বয়ংক্রিয় বিশ্লেষণের জন্য আলাদা মডেল/Backend লাগবে।</p>
+</div>
 </section>
-
 </div>
 </main>
 
 <script type="module">
-import {initializeApp}
-from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-
-import {
- getAuth,signInWithEmailAndPassword,
- onAuthStateChanged,signOut
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-
-import {
- getDatabase,ref,set,onValue,push,onChildAdded
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {getDatabase,ref,onValue,set,update,remove} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyAqR7FYfkbwka-IxqM3Y4JNCFXlON__PfU",
@@ -380,710 +205,360 @@ const firebaseConfig={
 };
 
 const ADMIN_UID="hkVmVU6dfHcrlgYRpWPmIdyMuS32";
-const appFirebase=initializeApp(firebaseConfig);
-const auth=getAuth(appFirebase);
-const db=getDatabase(appFirebase);
+const appFb=initializeApp(firebaseConfig);
+const auth=getAuth(appFb);
+const db=getDatabase(appFb);
 
-let teams={};
-let scores={};
-let syncStarted=false;
-let broadcastData={};
-let killFeed=[];
-let adminPC=null;
-let adminListeners=[];
-let adminPending=[];
-let remoteStream=null;
+const maps=["Bermuda","Purgatory","Kalahari","Nexterra","Solara","Kalahari"];
+const placement={1:12,2:9,3:8,4:7,5:6,6:5,7:4,8:3,9:2,10:1};
 
-const matches=[
- ["m1","Bermuda"],["m2","Purgatory"],
- ["m3","Kalahari"],["m4","Nexterra"],
- ["m5","Solara"],["m6","Kalahari"]
-];
-
-const plc={1:12,2:9,3:8,4:7,5:6,6:5,7:4,8:3,9:2,10:1,11:0,12:0};
+let teams={},scores={},broadcast={};
 const $=id=>document.getElementById(id);
-const room="lanSessions/main";
-const bcPath="broadcast/main";
 
-function setStatus(t){$("syncStatus").textContent=t}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-onAuthStateChanged(auth,user=>{
- if(user && user.uid===ADMIN_UID){
-  $("login").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  if(!syncStarted){
-   syncStarted=true;
-   startSync();
+const arr=o=>Object.entries(o||{}).map(([id,v])=>({id,...(v||{})}));
+
+const teamArray=()=>arr(teams).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+
+function points(s={}){
+ let k=Math.max(0,Number(s.kills)||0);
+ let p=Math.max(0,Number(s.placement)||0);
+ return {kill:k,place:placement[p]||0,total:k+(placement[p]||0)};
+}
+
+function matchName(i){return `Match ${i+1} — ${maps[i]}`}
+
+function totals(){
+ return teamArray().map(t=>{
+  let kills=0,place=0,total=0;
+  for(let i=0;i<6;i++){
+   let p=points(scores[`match${i+1}`]?.[t.id]||{});
+   kills+=p.kill;place+=p.place;total+=p.total;
   }
- }else{
-  $("app").classList.add("hidden");
-  $("login").classList.remove("hidden");
-  if(user)signOut(auth);
- }
-});
-
-$("loginBtn").onclick=async()=>{
- $("loginStatus").textContent="লগইন হচ্ছে...";
- try{
-  const r=await signInWithEmailAndPassword(
-   auth,$("email").value.trim(),$("password").value
-  );
-  if(r.user.uid!==ADMIN_UID){
-   await signOut(auth);
-   throw new Error("এই অ্যাকাউন্ট Admin নয়।");
-  }
- }catch(e){
-  $("loginStatus").textContent="Login হয়নি: "+e.message;
- }
-};
-
-window.logout=async()=>{
- await disconnectObserver();
- await signOut(auth);
-};
-
-function startSync(){
- setStatus("Connecting...");
-
- onValue(ref(db,"teams/roster"),s=>{
-  teams=s.val()||{};
-  renderTeams();
-  renderScores();
-  renderStanding();
-  renderBroadcastTeamInputs();
-  renderBroadcastPlayerTeamSelect();
-  renderBroadcastScreen();
-  setStatus("Connected");
- },e=>setStatus("Error: "+e.message));
-
- onValue(ref(db,"teams/scores"),s=>{
-  scores=s.val()||{};
-  renderScores();
-  renderStanding();
-  setStatus("Connected");
- },e=>setStatus("Error: "+e.message));
-
- onValue(ref(db,bcPath),s=>{
-  broadcastData=s.val()||{};
-  killFeed=Array.isArray(broadcastData.killFeed)?broadcastData.killFeed:[];
-  fillBroadcastForm();
-  renderBroadcastScreen();
-  renderBroadcastFeedAdmin();
- },e=>{
-  $("bcStatus").textContent="Broadcast Sync Error: "+e.message;
- });
-}
-
-window.show=id=>{
- ["teams","scores","standing","live","observer","broadcast"].forEach(x=>{
-  $(x).classList.toggle("hidden",x!==id);
- });
- if(id==="scores")renderScores();
- if(id==="standing"||id==="live")renderStanding();
- if(id==="broadcast"){
-  renderBroadcastTeamInputs();
-  renderBroadcastPlayerTeamSelect();
-  renderBroadcastPlayerInputs();
-  renderBroadcastScreen();
- }
-};
-
-function makePlayerForm(){
- $("playerForm").innerHTML="";
- for(let i=1;i<=4;i++){
-  const box=document.createElement("div");
-  box.innerHTML='<label>Player '+i+' Name</label><input class="pname" placeholder="Player '+i+' Name"><label>Player '+i+' Photo URL (optional)</label><input class="pphoto" placeholder="Photo URL">';
-  $("playerForm").appendChild(box);
- }
-}
-makePlayerForm();
-
-window.addTeam=async()=>{
- const name=$("teamName").value.trim();
- const names=[...document.querySelectorAll(".pname")].map(x=>x.value.trim());
- const photos=[...document.querySelectorAll(".pphoto")].map(x=>x.value.trim());
-
- if(!name||names.some(x=>!x)){
-  alert("টিমের নাম ও ৪ জনের নাম লিখুন।");return;
- }
- if(Object.keys(teams).length>=12){
-  alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে।");return;
- }
-
- const id="team_"+Date.now();
- const team={
-  name,
-  logo:$("teamLogo").value.trim(),
-  players:names.map((n,i)=>({name:n,photo:photos[i]||""}))
- };
-
- try{
-  await set(ref(db,"teams/roster/"+id),team);
-  $("teamName").value="";
-  $("teamLogo").value="";
-  makePlayerForm();
-  alert("টিম যোগ হয়েছে!");
- }catch(e){alert("সেভ হয়নি: "+e.message)}
-};
-
-window.editTeam=async id=>{
- const t=teams[id];
- if(!t)return;
-
- const name=prompt("Team Name",t.name);
- if(name===null)return;
-
- const updated={...t,name:name.trim()||t.name,players:[...(t.players||[])]};
-
- for(let i=0;i<4;i++){
-  const n=prompt("Player "+(i+1)+" Name",t.players?.[i]?.name||"");
-  if(n===null)return;
-  updated.players[i]={...(updated.players[i]||{}),name:n};
- }
-
- try{
-  await set(ref(db,"teams/roster/"+id),updated);
-  alert("পরিবর্তন সেভ হয়েছে।");
- }catch(e){alert(e.message)}
-};
-
-window.deleteTeam=async id=>{
- if(!confirm("এই টিমটি মুছে ফেলবে?"))return;
- try{
-  await set(ref(db,"teams/roster/"+id),null);
-  await set(ref(db,"teams/scores/"+id),null);
- }catch(e){alert(e.message)}
-};
-
-function renderTeams(){
- const root=$("teamList");
- root.innerHTML="";
-
- Object.entries(teams).forEach(([id,t],i)=>{
-  const box=document.createElement("div");
-  box.className="team";
-
-  const logo=document.createElement("img");
-  logo.src=t.logo||"";
-  logo.alt="Team Logo";
-
-  const title=document.createElement("h3");
-  title.textContent=(i+1)+". "+t.name;
-  box.append(logo,title);
-
-  const players=document.createElement("div");
-  players.className="players";
-
-  (t.players||[]).forEach(p=>{
-   const row=document.createElement("div");
-   row.className="player";
-   const img=document.createElement("img");
-   img.src=p.photo||"";
-   img.alt="";
-   const span=document.createElement("span");
-   span.textContent=p.name;
-   row.append(img,span);
-   players.append(row);
-  });
-
-  const edit=document.createElement("button");
-  edit.textContent="EDIT TEAM";
-  edit.onclick=()=>editTeam(id);
-
-  const del=document.createElement("button");
-  del.textContent="DELETE";
-  del.className="danger";
-  del.onclick=()=>deleteTeam(id);
-
-  box.append(players,edit,del);
-  root.append(box);
- });
-
- if(!Object.keys(teams).length){
-  root.textContent="এখনো কোনো টিম যোগ করা হয়নি।";
- }
-}
-
-function renderScores(){
- const id=$("matchSelect").value;
- const root=$("scoreRows");
- if(!root)return;
-
- root.innerHTML="";
-
- Object.entries(teams).forEach(([teamId,t])=>{
-  const old=scores[teamId]?.[id]||{};
-  const row=document.createElement("div");
-  row.className="team";
-
-  const title=document.createElement("b");
-  title.textContent=t.name;
-
-  const grid=document.createElement("div");
-  grid.className="grid";
-
-  const kill=document.createElement("input");
-  kill.className="score";
-  kill.type="number";
-  kill.min="0";
-  kill.max="99";
-  kill.placeholder="Kills";
-  kill.value=old.kills??0;
-  kill.dataset.team=teamId;
-  kill.dataset.field="kills";
-
-  const place=document.createElement("select");
-  place.className="place";
-  place.dataset.team=teamId;
-  place.dataset.field="placement";
-  place.innerHTML='<option value="0">Placement</option>'+
-   Array.from({length:12},(_,i)=>
-    '<option value="'+(i+1)+'">'+(i+1)+' Place</option>'
-   ).join("");
-
-  place.value=old.placement??0;
-  grid.append(kill,place);
-  row.append(title,grid);
-  root.append(row);
- });
-
- if(!Object.keys(teams).length){
-  root.textContent="আগে Team Management থেকে টিম যোগ করো।";
- }
-}
-
-window.saveScores=async()=>{
- const match=$("matchSelect").value;
- const inputs=[...document.querySelectorAll("#scoreRows [data-team]")];
- const updates={};
-
- inputs.forEach(x=>{
-  const id=x.dataset.team;
-  updates[id]??={};
-  updates[id][x.dataset.field]=Number(x.value)||0;
- });
-
- try{
-  for(const [id,value] of Object.entries(updates)){
-   await set(ref(db,"teams/scores/"+id+"/"+match),value);
-  }
-  alert("Match Scores সেভ হয়েছে!");
- }catch(e){alert("সেভ হয়নি: "+e.message)}
-};
-
-function getTotals(){
- return Object.entries(teams).map(([id,t])=>{
-  let kills=0,totalPlc=0,total=0;
-  const perMatch={};
-
-  matches.forEach(([m])=>{
-   const s=scores[id]?.[m]||{};
-   const k=Number(s.kills)||0;
-   const p=Number(s.placement)||0;
-   const pp=plc[p]||0;
-   kills+=k;
-   totalPlc+=pp;
-   perMatch[m]=k+pp;
-   total+=k+pp;
-  });
-
-  return {id,name:t.name,kills,totalPlc,total,perMatch};
+  return {...t,kills,place,total};
  }).sort((a,b)=>b.total-a.total||b.kills-a.kills);
 }
 
+function render(){
+ $("teamCount").textContent=teamArray().length;
+
+ $("matchSchedule").innerHTML=maps.map((m,i)=>
+  `<div class="panel"><b>Match ${i+1}</b><p class="muted">${esc(m)}</p></div>`
+ ).join("");
+
+ $("teamList").innerHTML=teamArray().map(t=>
+  `<div class="panel team">
+   <img src="${esc(t.logo||"")}" onerror="this.style.visibility='hidden'">
+   <div style="flex:1"><b>${esc(t.name)}</b>
+   <div class="note">${(t.players||[]).map(p=>esc(p.name||p)).join(" • ")}</div></div>
+   <button class="secondary" data-edit="${esc(t.id)}">Edit</button>
+   <button class="danger" data-del="${esc(t.id)}">Delete</button>
+  </div>`
+ ).join("")||"<p class='note'>এখনো কোনো টিম যোগ করা হয়নি।</p>";
+
+ renderStanding();
+ renderScoreRows();
+ renderOverlay();
+}
+
 function renderStanding(){
- const list=getTotals();
- const body=$("standingRows");
- const live=$("liveRows");
- const matchBody=$("matchRows");
- if(!body)return;
+ $("standingRows").innerHTML=totals().map((t,i)=>
+  `<tr><td>${i+1}</td><td>${esc(t.name)}</td><td>${t.kills}</td><td>${t.place}</td><td><b>${t.total}</b></td></tr>`
+ ).join("");
 
- body.innerHTML="";
- live.innerHTML="";
- matchBody.innerHTML="";
-
- list.forEach((t,i)=>{
-  const tr=document.createElement("tr");
-  [i+1,t.name,t.kills,t.totalPlc,t.total].forEach(v=>{
-   const td=document.createElement("td");
-   td.textContent=v;
-   tr.append(td);
-  });
-  body.append(tr);
-  live.append(tr.cloneNode(true));
-
-  const mr=document.createElement("tr");
-  const name=document.createElement("td");
-  name.textContent=t.name;
-  mr.append(name);
-
-  matches.forEach(([m])=>{
-   const td=document.createElement("td");
-   td.textContent=t.perMatch[m];
-   mr.append(td);
-  });
-  matchBody.append(mr);
- });
-
- $("champion").textContent=list.length?
-  "🏆 Champion: "+list[0].name:
-  "এখনো কোনো টিম নেই";
+ $("ovStanding").innerHTML=totals().slice(0,5).map((t,i)=>
+  `<div class="bcastrow"><span>${i+1}. ${esc(t.name)}</span><b>${t.total} pts</b></div>`
+ ).join("");
 }
 
-/* BROADCAST ADMIN */
+function renderScoreRows(){
+ let m=$("matchSelect").value||"match1";
+ let data=scores[m]||{};
 
-function renderBroadcastTeamInputs(){
- const root=$("bcTeamKills");
- if(!root)return;
- root.innerHTML="";
-
- Object.entries(teams).forEach(([id,t])=>{
-  const row=document.createElement("div");
-  row.className="grid";
-  const name=document.createElement("label");
-  name.textContent=t.name;
-  const input=document.createElement("input");
-  input.type="number";
-  input.min="0";
-  input.placeholder="Elims";
-  input.dataset.bcteam=id;
-  input.value=broadcastData.teamKills?.[id]??0;
-  row.append(name,input);
-  root.append(row);
- });
+ $("scoreRows").innerHTML=teamArray().map(t=>{
+  let s=data[t.id]||{};
+  let p=points(s);
+  return `<tr>
+   <td>${esc(t.name)}</td>
+   <td><input aria-label="kills" type="number" min="0" data-kill="${esc(t.id)}" value="${Number(s.kills)||0}" style="width:75px;margin:0"></td>
+   <td><select data-place="${esc(t.id)}" style="width:95px;margin:0">
+    <option value="0">—</option>
+    ${Array.from({length:10},(_,i)=>i+1).map(n=>
+     `<option value="${n}" ${Number(s.placement)===n?"selected":""}>${n}${n===1?"st":n===2?"nd":n===3?"rd":"th"}</option>`
+    ).join("")}
+   </select></td>
+   <td>${p.kill}</td><td>${p.place}</td><td><b>${p.total}</b></td>
+  </tr>`;
+ }).join("")||"<tr><td colspan='6'>আগে টিম যোগ করুন</td></tr>";
 }
 
-function renderBroadcastTeamPlayerSelect(){
- const select=$("bcPlayerTeam");
- if(!select)return;
- const old=select.value||broadcastData.selectedTeam||"";
- select.innerHTML='<option value="">টিম নির্বাচন করো</option>';
+function renderOverlay(){
+ let m=$("bMatch").value||"match1";
+ let d=scores[m]||{};
+ let i=Number(m.replace("match",""))-1;
 
- Object.entries(teams).forEach(([id,t])=>{
-  const option=document.createElement("option");
-  option.value=id;
-  option.textContent=t.name;
-  select.append(option);
- });
+ $("ovMatch").textContent=`MATCH ${i+1} — ${maps[i]}`;
+ $("ovTime").textContent=broadcast.time||$("bTime").value||"00:00";
+ $("ovArea").textContent="Area: "+(broadcast.area||$("bArea").value||"—");
+ $("ovAliveT").textContent=broadcast.aliveTeams??$("bAliveTeams").value??12;
+ $("ovAliveP").textContent=broadcast.alivePlayers??$("bAlivePlayers").value??48;
+ $("ovSpectator").textContent="Spectating: "+(broadcast.spectator||$("bSpectator").value||"—");
+ $("ovFeed").textContent="Kill Feed: "+(broadcast.killFeed||$("bKillFeed").value||"—");
 
- if(teams[old])select.value=old;
+ $("ovTeams").innerHTML=teamArray().map(t=>{
+  let s=d[t.id]||{};
+  let p=points(s);
+  return `<tr><td>${esc(t.name)}</td><td>${p.kill}</td><td>${p.total}</td><td>${s.eliminated?"ELIMINATED":"ALIVE"}</td></tr>`;
+ }).join("");
+
+ renderStanding();
 }
 
-function renderBroadcastPlayerInputs(){
- const root=$("bcPlayerKills");
- if(!root)return;
- root.innerHTML="";
- const teamId=$("bcPlayerTeam").value;
- if(!teamId||!teams[teamId])return;
-
- const players=teams[teamId].players||[];
- players.forEach((p,i)=>{
-  const row=document.createElement("div");
-  row.className="grid";
-  const label=document.createElement("label");
-  label.textContent=p.name||("Player "+(i+1));
-  const input=document.createElement("input");
-  input.type="number";
-  input.min="0";
-  input.placeholder="Kills";
-  input.dataset.playerkill=i;
-  input.value=broadcastData.playerKills?.[teamId]?.[i]??0;
-  row.append(label,input);
-  root.append(row);
+function fillMatches(){
+ ["matchSelect","bMatch"].forEach(id=>{
+  $(id).innerHTML=maps.map((m,i)=>
+   `<option value="match${i+1}">${matchName(i)}</option>`
+  ).join("");
  });
 }
 
-function fillBroadcastForm(){
- $("bcGame").value=broadcastData.game||"GAME 1";
- $("bcTime").value=broadcastData.time||"";
- $("bcAlivePlayers").value=broadcastData.alivePlayers??"";
- $("bcAliveTeams").value=broadcastData.aliveTeams??"";
- $("bcArea").value=broadcastData.area||"";
- $("bcCurrentPlayer").value=broadcastData.currentPlayer||"";
- $("bcMap").value=broadcastData.mapImageUrl||"";
-
- renderBroadcastTeamInputs();
- renderBroadcastTeamPlayerSelect();
- renderBroadcastPlayerInputs();
+function clearTeam(){
+ $("teamId").value="";
+ $("teamName").value="";
+ $("teamLogo").value="";
+ for(let i=1;i<=4;i++)$("player"+i).value="";
 }
 
-function renderBroadcastScreen(){
- $("outGame").textContent=broadcastData.game||"GAME 1";
- $("outTime").textContent=broadcastData.time||"--:--";
- $("outAlive").textContent=(broadcastData.alivePlayers??"--")+" ALIVE";
- $("outArea").textContent="AREA: "+(broadcastData.area||"-");
- $("outCurrentPlayer").textContent="SPECTATING: "+(broadcastData.currentPlayer||"-");
+function makePlayerInputs(){
+ $("playerInputs").innerHTML=[1,2,3,4].map(i=>
+  `<div><label>Player ${i} নাম</label><input id="player${i}" placeholder="Player ${i}"></div>`
+ ).join("");
+}
 
- const teamBody=$("outTeamKills");
- teamBody.innerHTML="";
- const list=Object.entries(teams).map(([id,t])=>({
-  id,name:t.name,
-  kills:Number(broadcastData.teamKills?.[id])||0
- })).sort((a,b)=>b.kills-a.kills);
-
- list.forEach((t,i)=>{
-  const tr=document.createElement("tr");
-  [i+1,t.name,t.kills].forEach(v=>{
-   const td=document.createElement("td");
-   td.textContent=v;
-   tr.append(td);
-  });
-  teamBody.append(tr);
- });
-
- const selected=broadcastData.selectedTeam;
- const playerRoot=$("outPlayerKills");
- playerRoot.innerHTML="";
- const team=teams[selected];
-
- $("outPlayerTitle").textContent=team?
-  team.name+" — PLAYER KILLS":"PLAYER SCOREBOARD";
-
- if(team){
-  (team.players||[]).forEach((p,i)=>{
-   const row=document.createElement("div");
-   row.style.cssText="display:flex;justify-content:space-between;font-size:clamp(7px,1vw,11px);padding:2px";
-   const name=document.createElement("span");
-   name.textContent=p.name||("Player "+(i+1));
-   const kills=document.createElement("b");
-   kills.textContent=Number(broadcastData.playerKills?.[selected]?.[i])||0;
-   row.append(name,kills);
-   playerRoot.append(row);
-  });
- }else{
-  playerRoot.textContent="Admin থেকে টিম নির্বাচন করো";
+$("loginBtn").onclick=async()=>{
+ $("loginMsg").textContent="লগইন হচ্ছে…";
+ try{
+  await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+ }catch(e){
+  $("loginMsg").textContent="লগইন হয়নি: "+e.message;
  }
-
- const feed=$("outKillFeed");
- feed.innerHTML="";
- const recent=killFeed.slice(-5).reverse();
- recent.forEach(item=>{
-  const div=document.createElement("div");
-  div.className="feed-item";
-  div.textContent=(item.killer||"?")+"  ➜  "+(item.victim||"?");
-  feed.append(div);
- });
- if(!recent.length)feed.textContent="No Kill Feed";
-
- const map=$("outMap");
- const placeholder=$("mapPlaceholder");
- if(broadcastData.mapImageUrl){
-  map.src=broadcastData.mapImageUrl;
-  map.classList.remove("hidden");
-  placeholder.classList.add("hidden");
-  map.onerror=()=>{
-   map.classList.add("hidden");
-   placeholder.classList.remove("hidden");
-   placeholder.textContent="MAP IMAGE ERROR";
-  };
- }else{
-  map.removeAttribute("src");
-  map.classList.add("hidden");
-  placeholder.classList.remove("hidden");
-  placeholder.textContent="MINI MAP";
- }
-}
-
-function renderBroadcastFeedAdmin(){
- const root=$("bcFeedAdmin");
- if(!root)return;
- root.innerHTML="";
- killFeed.slice(-8).reverse().forEach((item,index)=>{
-  const row=document.createElement("div");
-  row.textContent=(item.killer||"?")+" ➜ "+(item.victim||"?");
-  root.append(row);
- });
-}
-
-window.addKillFeed=()=>{
- const killer=$("bcKiller").value.trim();
- const victim=$("bcVictim").value.trim();
- if(!killer||!victim){
-  alert("Killer ও Eliminated Player-এর নাম লিখো।");
-  return;
- }
- killFeed.push({killer,victim,at:Date.now()});
- $("bcKiller").value="";
- $("bcVictim").value="";
- renderBroadcastFeedAdmin();
- $("bcStatus").textContent="Kill Feed যোগ হয়েছে। Save Broadcast চাপো।";
 };
 
-window.saveBroadcast=async()=>{
- const teamKills={};
- document.querySelectorAll("[data-bcteam]").forEach(input=>{
-  teamKills[input.dataset.bcteam]=Number(input.value)||0;
+$("logoutBtn").onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+ if(user&&user.uid===ADMIN_UID){
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("logoutBtn").classList.remove("hidden");
+  $("status").textContent="Admin Connected";
+
+  onValue(ref(db,"teams/roster"),s=>{
+   teams=s.val()||{};
+   render();
+  });
+
+  onValue(ref(db,"teams/scores"),s=>{
+   scores=s.val()||{};
+   render();
+  });
+
+  onValue(ref(db,"broadcast/main"),s=>{
+   broadcast=s.val()||{};
+   for(let [k,id] of Object.entries({
+    match:"bMatch",time:"bTime",aliveTeams:"bAliveTeams",
+    alivePlayers:"bAlivePlayers",area:"bArea",
+    spectator:"bSpectator",killFeed:"bKillFeed",map:"bMap"
+   })){
+    if(broadcast[k]!==undefined)$(id).value=broadcast[k];
+   }
+   renderOverlay();
+  });
+
+ }else if(user){
+  signOut(auth);
+  $("loginMsg").textContent="এই অ্যাকাউন্টে Admin অনুমতি নেই।";
+  $("status").textContent="Access denied";
+ }else{
+  $("login").classList.remove("hidden");
+  $("app").classList.add("hidden");
+  $("logoutBtn").classList.add("hidden");
+  $("status").textContent="Login required";
+ }
+});
+
+document.querySelectorAll("[data-tab]").forEach(b=>{
+ b.onclick=()=>{
+  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll(".tabpage").forEach(x=>x.classList.toggle("hidden",x.id!==b.dataset.tab));
+  if(b.dataset.tab==="matches")renderScoreRows();
+  if(b.dataset.tab==="broadcast")renderOverlay();
+ };
+});
+
+$("saveTeam").onclick=async()=>{
+ let id=$("teamId").value||("team_"+Date.now());
+ let name=$("teamName").value.trim();
+
+ if(!name){alert("টিমের নাম লিখুন");return}
+ if(!teams[id]&&teamArray().length>=12){alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে");return}
+
+ let players=[1,2,3,4].map(i=>({name:$("player"+i).value.trim()}));
+
+ await set(ref(db,"teams/roster/"+id),{
+  name,logo:$("teamLogo").value.trim(),players,updatedAt:Date.now()
  });
 
- const selectedTeam=$("bcPlayerTeam").value;
- const playerKills={...(broadcastData.playerKills||{})};
+ clearTeam();
+ alert("টিম সেভ হয়েছে");
+};
 
- if(selectedTeam){
-  playerKills[selectedTeam]=[0,0,0,0];
-  document.querySelectorAll("[data-playerkill]").forEach(input=>{
-   playerKills[selectedTeam][Number(input.dataset.playerkill)]=Number(input.value)||0;
+$("clearTeam").onclick=clearTeam;
+
+$("teamList").addEventListener("click",async e=>{
+ let edit=e.target.dataset.edit;
+ let del=e.target.dataset.del;
+
+ if(edit){
+  let t=teams[edit];
+  $("teamId").value=edit;
+  $("teamName").value=t.name||"";
+  $("teamLogo").value=t.logo||"";
+  (t.players||[]).forEach((p,i)=>{
+   $("player"+(i+1)).value=typeof p==="string"?p:(p.name||"");
   });
+  window.scrollTo({top:0,behavior:"smooth"});
  }
 
- const data={
-  game:$("bcGame").value,
-  time:$("bcTime").value.trim(),
-  alivePlayers:Number($("bcAlivePlayers").value)||0,
-  aliveTeams:Number($("bcAliveTeams").value)||0,
-  area:$("bcArea").value.trim(),
-  currentPlayer:$("bcCurrentPlayer").value.trim(),
-  mapImageUrl:$("bcMap").value.trim(),
-  selectedTeam,
-  teamKills,
-  playerKills,
-  killFeed:killFeed.slice(-30),
+ if(del&&confirm("এই টিমটি মুছে ফেলবেন?")){
+  await remove(ref(db,"teams/roster/"+del));
+ }
+});
+
+$("matchSelect").onchange=renderScoreRows;
+
+$("saveScores").onclick=async()=>{
+ let m=$("matchSelect").value;
+ let updates={};
+
+ document.querySelectorAll("[data-kill]").forEach(el=>{
+  let id=el.dataset.kill;
+  updates[id]={...(updates[id]||{}),kills:Math.max(0,Number(el.value)||0)};
+ });
+
+ document.querySelectorAll("[data-place]").forEach(el=>{
+  let id=el.dataset.place;
+  updates[id]={...(updates[id]||{}),placement:Number(el.value)||0};
+ });
+
+ for(let [id,v] of Object.entries(updates)){
+  let old=scores[m]?.[id]||{};
+  await update(ref(db,`teams/scores/${m}/${id}`),{...old,...v,updatedAt:Date.now()});
+ }
+
+ $("scoreMsg").textContent="সেভ হয়েছে ✓";
+ setTimeout(()=>$("scoreMsg").textContent="",2500);
+};
+
+["bMatch","bTime","bAliveTeams","bAlivePlayers","bArea","bSpectator","bKillFeed"].forEach(id=>
+ $(id).addEventListener("input",renderOverlay)
+);
+
+$("bMatch").onchange=renderOverlay;
+
+$("saveBroadcast").onclick=async()=>{
+ let data={
+  match:$("bMatch").value,
+  time:$("bTime").value.trim(),
+  aliveTeams:Number($("bAliveTeams").value)||0,
+  alivePlayers:Number($("bAlivePlayers").value)||0,
+  area:$("bArea").value.trim(),
+  spectator:$("bSpectator").value.trim(),
+  killFeed:$("bKillFeed").value.trim(),
+  map:$("bMap").value.trim(),
   updatedAt:Date.now()
  };
 
- $("bcStatus").textContent="সেভ হচ্ছে...";
+ await set(ref(db,"broadcast/main"),data);
+ broadcast=data;
+ renderOverlay();
+ alert("Broadcast তথ্য আপডেট হয়েছে");
+};
+
+// Free in-browser OCR experiment. It reads visible text only; it does not infer kills.
+let captureStream=null,ocrWorker=null;
+const captureVideo=$("captureVideo");
+const ocrStatus=$("ocrStatus");
+
+$("startCapture").onclick=async()=>{
  try{
-  await set(ref(db,bcPath),data);
-  $("bcStatus").textContent="Broadcast তথ্য সেভ হয়েছে!";
+  if(!navigator.mediaDevices?.getDisplayMedia){
+   throw new Error("এই ব্রাউজারে Screen Share সমর্থিত নয়।");
+  }
+
+  captureStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+  captureVideo.srcObject=captureStream;
+  $("scanFrame").disabled=false;
+  $("stopCapture").disabled=false;
+
+  ocrStatus.textContent="স্ক্রিন শেয়ার চলছে। গেমের HUD পরিষ্কার দেখা যাচ্ছে কি না দেখুন।";
+  captureStream.getVideoTracks()[0].addEventListener("ended",stopCapture);
+
  }catch(e){
-  $("bcStatus").textContent="সেভ হয়নি: "+e.message;
+  ocrStatus.textContent="স্ক্রিন শেয়ার চালু হয়নি: "+e.message;
  }
 };
 
-/* ADMIN WEBRTC RECEIVER */
-
-function videoStatus(text){
- $("videoStatus").textContent="● "+text;
-}
-
-function clearAdminListeners(){
- adminListeners.forEach(fn=>fn());
- adminListeners=[];
- adminPending=[];
-}
-
-async function addAdminCandidate(data){
- if(!adminPC||!data)return;
- const candidate=new RTCIceCandidate(data);
- if(adminPC.remoteDescription){
-  try{await adminPC.addIceCandidate(candidate)}catch(e){console.log(e)}
- }else{
-  adminPending.push(candidate);
- }
-}
-
-async function flushAdminCandidates(){
- for(const c of adminPending){
-  try{await adminPC.addIceCandidate(c)}catch(e){console.log(e)}
- }
- adminPending=[];
-}
-
-async function connectObserver(){
- if(!auth.currentUser||auth.currentUser.uid!==ADMIN_UID){
-  alert("আগে Admin Login করো।");
-  return;
+function stopCapture(){
+ if(captureStream){
+  captureStream.getTracks().forEach(t=>t.stop());
+  captureStream=null;
  }
 
- await disconnectObserver();
+ captureVideo.srcObject=null;
+ $("scanFrame").disabled=true;
+ $("stopCapture").disabled=true;
+ ocrStatus.textContent="স্ক্রিন শেয়ার বন্ধ।";
+}
 
+$("stopCapture").onclick=stopCapture;
+
+$("scanFrame").onclick=async()=>{
  try{
-  videoStatus("CONNECTING...");
-  adminPC=new RTCPeerConnection({
-   iceServers:[{urls:"stun:stun.l.google.com:19302"}]
-  });
+  if(!captureStream)throw new Error("আগে স্ক্রিন শেয়ার শুরু করুন।");
 
-  remoteStream=new MediaStream();
-  $("liveVideo").srcObject=remoteStream;
-  $("broadcastVideo").srcObject=remoteStream;
+  ocrStatus.textContent="OCR ইঞ্জিন প্রস্তুত হচ্ছে… প্রথমবার কিছু সময় লাগতে পারে।";
 
-  adminPC.ontrack=event=>{
-   event.streams[0]?.getTracks().forEach(track=>{
-    remoteStream.addTrack(track);
-   });
-   $("liveVideo").play().catch(()=>{});
-   $("broadcastVideo").play().catch(()=>{});
-   videoStatus("VIDEO RECEIVING");
-  };
+  if(!ocrWorker){
+   const mod=await import("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js");
+   ocrWorker=await mod.createWorker("eng");
+  }
 
-  adminPC.onconnectionstatechange=()=>{
-   if(adminPC)videoStatus("CONNECTION: "+adminPC.connectionState);
-  };
+  const video=captureVideo;
+  const canvas=$("captureCanvas");
 
-  adminPC.onicecandidate=event=>{
-   if(event.candidate&&adminPC){
-    push(ref(db,room+"/adminCandidates"),event.candidate.toJSON());
-   }
-  };
+  if(!video.videoWidth)throw new Error("এখনো স্ক্রিনের ছবি পাওয়া যায়নি।");
 
-  await set(ref(db,room+"/adminCandidates"),null);
-  await set(ref(db,room+"/offer"),null);
-  await set(ref(db,room+"/answer"),null);
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+  canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
 
-  const candidateListener=onChildAdded(
-   ref(db,room+"/observerCandidates"),
-   snap=>addAdminCandidate(snap.val())
-  );
-  adminListeners.push(candidateListener);
+  ocrStatus.textContent="স্ক্রিনের লেখা পড়া হচ্ছে…";
 
-  let answerHandled=false;
-  const answerListener=onValue(
-   ref(db,room+"/answer"),
-   async snap=>{
-    if(!snap.exists()||answerHandled||!adminPC)return;
-    answerHandled=true;
-    try{
-     await adminPC.setRemoteDescription(
-      new RTCSessionDescription(snap.val())
-     );
-     await flushAdminCandidates();
-     videoStatus("ANSWER RECEIVED — CONNECTING");
-    }catch(e){
-     answerHandled=false;
-     videoStatus("ANSWER ERROR");
-     console.log(e);
-    }
-   }
-  );
-  adminListeners.push(answerListener);
+  const result=await ocrWorker.recognize(canvas);
 
-  const offer=await adminPC.createOffer();
-  await adminPC.setLocalDescription(offer);
-  await set(ref(db,room+"/offer"),{
-   type:offer.type,sdp:offer.sdp
-  });
-  videoStatus("OFFER SENT — WAITING FOR OBSERVER");
+  $("ocrOutput").value=(result.data.text||"").trim()||"কোনো লেখা শনাক্ত হয়নি।";
+  ocrStatus.textContent="পড়া শেষ। ফলাফল নিজে যাচাই করুন—এটি Kill/স্কোরের স্বয়ংক্রিয় সিদ্ধান্ত নয়।";
 
  }catch(e){
-  videoStatus("CONNECTION FAILED");
-  console.log(e);
-  alert("সংযোগ শুরু হয়নি: "+e.message);
+  ocrStatus.textContent="OCR চালানো যায়নি: "+e.message;
  }
-}
+};
 
-async function disconnectObserver(){
- clearAdminListeners();
- if(adminPC){
-  adminPC.close();
-  adminPC=null;
- }
- remoteStream=null;
- $("liveVideo").srcObject=null;
- $("broadcastVideo").srcObject=null;
-
- try{
-  await set(ref(db,room+"/offer"),null);
-  await set(ref(db,room+"/answer"),null);
-  await set(ref(db,room+"/adminCandidates"),null);
- }catch(e){console.log(e)}
-
- videoStatus("NOT CONNECTED");
-}
-
-$("connectBtn").onclick=connectObserver;
-$("disconnectBtn").onclick=disconnectObserver;
-
-$("bcPlayerTeam").addEventListener("change",renderBroadcastPlayerInputs);
-
+fillMatches();
+makePlayerInputs();
+clearTeam();
 </script>
 </body>
 </html>
