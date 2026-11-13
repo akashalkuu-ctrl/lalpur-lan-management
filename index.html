@@ -7,28 +7,32 @@
 <title>LALPUR LAN MANAGEMENT</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif}
-header{background:#121d30;padding:20px;text-align:center;border-bottom:2px solid #e9b949}
+body{margin:0;background:#080d18;color:#fff;font-family:Arial,sans-serif}
+header{background:#121d30;padding:18px;text-align:center;border-bottom:2px solid #e9b949}
 h1{color:#f5c542;margin:0}
-main{padding:14px;max-width:850px;margin:auto}
-.card{background:#142137;padding:16px;border-radius:12px;margin:14px 0;border:1px solid #293b56}
-h2{font-size:17px;color:#f5c542;margin-top:0}
-button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;width:100%;margin-top:9px}
+main{max-width:1000px;margin:auto;padding:12px}
+.card{background:#142137;border:1px solid #34445d;border-radius:12px;padding:15px;margin:13px 0}
+h2{color:#f5c542;font-size:18px}
+input,select{width:100%;padding:11px;margin:5px 0;background:#091321;color:white;border:1px solid #42536c;border-radius:7px}
+button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;margin:5px 0;cursor:pointer}
 .secondary{background:#34445d;color:white}
 .danger{background:#a83242;color:white}
-input{width:100%;padding:12px;margin:7px 0;background:#091321;color:white;border:1px solid #42536c;border-radius:7px}
-label{display:block;color:#c6d2e3;font-size:13px;margin-top:10px}
-.hint{font-size:12px;color:#aab7ca;line-height:1.6}
-.status{color:#f5c542;font-size:13px}
-.hidden{display:none!important}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-video{width:100%;background:#000;border-radius:10px;margin-top:10px}
-.team-card{background:#0b1628;padding:12px;border:1px solid #3a4b65;border-radius:9px;margin:10px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .players{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.team{background:#0b1628;padding:12px;border:1px solid #34445d;border-radius:9px;margin:10px 0}
+.team img{width:55px;height:55px;object-fit:cover;border-radius:50%;background:#26364c}
+.player{display:flex;align-items:center;gap:8px;font-size:13px}
+.player img{width:35px;height:35px}
 table{width:100%;border-collapse:collapse;font-size:12px}
-td,th{padding:10px 4px;border-bottom:1px solid #34445d;text-align:center}
+td,th{padding:9px 4px;border-bottom:1px solid #34445d;text-align:center}
 th{color:#f5c542}
-footer{text-align:center;color:#77859b;padding:20px;font-size:12px}
+.tablewrap{overflow-x:auto}
+.small{font-size:12px;color:#aab7ca;line-height:1.6}
+.status{color:#f5c542}
+.hidden{display:none!important}
+input.score{min-width:65px;width:65px}
+select.place{min-width:90px;width:90px}
+.champion{color:#f5c542;font-size:20px;text-align:center}
 </style>
 </head>
 <body>
@@ -40,400 +44,375 @@ footer{text-align:center;color:#77859b;padding:20px;font-size:12px}
 
 <main>
 
-<!-- LOGIN -->
-<div id="loginPanel" class="card">
+<div id="login" class="card">
 <h2>🔐 ADMIN LOGIN</h2>
-<p class="hint">Firebase-এর আগে থেকে তৈরি Email ও Password দিয়ে লগইন করো।</p>
-<label>Email</label>
+<p class="small">Firebase Admin Email ও Password দিয়ে লগইন করো।</p>
 <input id="email" type="email" placeholder="Admin Email">
-<label>Password</label>
-<input id="password" type="password" placeholder="Firebase Password">
-<button id="loginBtn" onclick="login()">LOGIN</button>
+<input id="password" type="password" placeholder="Admin Password">
+<button onclick="login()">LOGIN</button>
 <p id="loginStatus" class="status"></p>
 </div>
 
-<!-- APP -->
-<div id="appPanel" class="hidden">
+<div id="app" class="hidden">
 
 <div class="card">
-<h2>📱 SELECT PANEL</h2>
 <div class="grid">
-<button onclick="showPanel('admin')">ADMIN PANEL</button>
-<button onclick="showPanel('observer')">OBSERVER PANEL</button>
+<button onclick="show('teams')">TEAM MANAGEMENT</button>
+<button onclick="show('scores')">MATCH SCORING</button>
+<button onclick="show('standing')">OVERALL STANDING</button>
+<button onclick="show('live')">LIVE SCOREBOARD</button>
 </div>
 <button class="secondary" onclick="logout()">LOGOUT</button>
+<p class="small">Firebase Sync: <span id="syncStatus">Connecting...</span></p>
 </div>
 
-<!-- ADMIN -->
-<div id="adminPanel">
-
+<section id="teams">
 <div class="card">
-<h2>🎮 ADMIN CONTROL</h2>
-<p id="adminStatus" class="status">● ADMIN READY</p>
-<button onclick="startAdminConnection()">CONNECT TO OBSERVER</button>
-<button class="danger" onclick="stopConnection()">STOP CONNECTION</button>
-<video id="adminVideo" autoplay playsinline></video>
-<p class="hint">Observer ফোনে স্ক্রিন শেয়ার শুরু হলে এখানে দেখা যাবে।</p>
-</div>
-
-<div class="card">
-<h2>🏆 TEAM MANAGEMENT</h2>
-<p class="hint">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
+<h2>🏆 ADD NEW TEAM</h2>
+<p class="small">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার। ছবি পরে যোগ করা যাবে।</p>
 <input id="teamName" placeholder="Team Name">
-<div id="playerInputs"></div>
+<input id="teamLogo" placeholder="Team Logo Image URL (optional)">
+
+<div id="playerForm"></div>
 <button onclick="addTeam()">ADD TEAM</button>
-<div id="teams"></div>
 </div>
 
 <div class="card">
-<h2>📊 SIX MATCHES</h2>
+<h2>📋 TEAM LIST</h2>
+<div id="teamList">Loading...</div>
+</div>
+</section>
+
+<section id="scores" class="hidden">
+<div class="card">
+<h2>🎮 MATCH SCORING</h2>
+<label>ম্যাচ নির্বাচন</label>
+<select id="matchSelect" onchange="renderScores()">
+<option value="m1">Match 1 - Bermuda</option>
+<option value="m2">Match 2 - Purgatory</option>
+<option value="m3">Match 3 - Kalahari</option>
+<option value="m4">Match 4 - Nexterra</option>
+<option value="m5">Match 5 - Solara</option>
+<option value="m6">Match 6 - Kalahari</option>
+</select>
+<p class="small">প্রতিটি টিমের Kill এবং Placement লিখে Save Scores চাপো। Kill = 1 Point।</p>
+<div id="scoreRows"></div>
+<button onclick="saveScores()">SAVE MATCH SCORES</button>
+</div>
+</section>
+
+<section id="standing" class="hidden">
+<div class="card">
+<h2>🥇 OVERALL STANDING</h2>
+<div id="champion" class="champion"></div>
+<div class="tablewrap">
 <table>
-<thead><tr><th>ম্যাচ</th><th>ম্যাপ</th><th>অবস্থা</th></tr></thead>
-<tbody>
-<tr><td>১</td><td>Bermuda</td><td>Pending</td></tr>
-<tr><td>২</td><td>Purgatory</td><td>Pending</td></tr>
-<tr><td>৩</td><td>Kalahari</td><td>Pending</td></tr>
-<tr><td>৪</td><td>Nexterra</td><td>Pending</td></tr>
-<tr><td>৫</td><td>Solara</td><td>Pending</td></tr>
-<tr><td>৬</td><td>Kalahari</td><td>Pending</td></tr>
-</tbody>
+<thead><tr><th>Rank</th><th>Team</th><th>Total Kill</th><th>PLC</th><th>Total Point</th></tr></thead>
+<tbody id="standingRows"></tbody>
 </table>
-<p class="hint">স্কোর যাচাই ও ৬ ম্যাচের Overall Standing পরবর্তী ধাপে যুক্ত হবে।</p>
 </div>
-
 </div>
-
-<!-- OBSERVER -->
-<div id="observerPanel" class="hidden">
-
 <div class="card">
-<h2>📡 OBSERVER PANEL</h2>
-<p id="observerStatus" class="status">● NOT CONNECTED</p>
-<button onclick="startObserver()">START SCREEN SHARE & CONNECT</button>
-<button class="danger" onclick="stopConnection()">STOP SCREEN SHARE</button>
-<p class="hint">ফোনের Screen Broadcast অনুমতি চাইলে অনুমতি দাও।</p>
-<video id="observerVideo" autoplay playsinline muted></video>
+<h2>📊 MATCH WISE POINTS</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Team</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th><th>M6</th></tr></thead>
+<tbody id="matchRows"></tbody>
+</table>
 </div>
+</div>
+</section>
 
+<section id="live" class="hidden">
+<div class="card">
+<h2>🔴 LIVE SCOREBOARD</h2>
+<p class="small">Admin-এর সেভ করা স্কোর এখানে আপডেট হবে।</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Rank</th><th>Team</th><th>Kill</th><th>PLC</th><th>Total</th></tr></thead>
+<tbody id="liveRows"></tbody>
+</table>
 </div>
+</div>
+</section>
 
 </div>
 </main>
-
-<footer>LALPUR LAN MANAGEMENT © 2026</footer>
 
 <script type="module">
 import {initializeApp}
 from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 
 import {
- getAuth, signInWithEmailAndPassword,
- onAuthStateChanged, signOut
+ getAuth,signInWithEmailAndPassword,
+ onAuthStateChanged,signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 import {
- getDatabase, ref, set, push, onValue,
- onChildAdded, remove
+ getDatabase,ref,set,onValue
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-const firebaseConfig = {
- apiKey: "AIzaSyAqR7FYfkbwka-IxqM3Y4JNCFXlON__PfU",
- authDomain: "lalpur-lan-management.firebaseapp.com",
- databaseURL: "https://lalpur-lan-management-default-rtdb.firebaseio.com",
- projectId: "lalpur-lan-management",
- storageBucket: "lalpur-lan-management.firebasestorage.app",
- messagingSenderId: "704237089803",
- appId: "1:704237089803:web:1c9cf6a0f0fe299aaf030e"
+const firebaseConfig={
+ apiKey:"AIzaSyAqR7FYfkbwka-IxqM3Y4JNCFXlON__PfU",
+ authDomain:"lalpur-lan-management.firebaseapp.com",
+ databaseURL:"https://lalpur-lan-management-default-rtdb.firebaseio.com",
+ projectId:"lalpur-lan-management",
+ storageBucket:"lalpur-lan-management.firebasestorage.app",
+ messagingSenderId:"704237089803",
+ appId:"1:704237089803:web:1c9cf6a0f0fe299aaf030e"
 };
 
-const ADMIN_UID = "hkVmVU6dfHcrlgYRpWPmIdyMuS32";
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const room = ref(db,"lanSessions/main");
+const ADMIN_UID="hkVmVU6dfHcrlgYRpWPmIdyMuS32";
+const appFirebase=initializeApp(firebaseConfig);
+const auth=getAuth(appFirebase);
+const db=getDatabase(appFirebase);
 
-let pc = null;
-let stream = null;
-let unsubscribers = [];
-let pendingCandidates = [];
-let teams = [];
+let teams={};
+let scores={};
+let ready=false;
 
-const $ = id => document.getElementById(id);
+const matches=[
+ ["m1","Bermuda"],["m2","Purgatory"],
+ ["m3","Kalahari"],["m4","Nexterra"],
+ ["m5","Solara"],["m6","Kalahari"]
+];
+
+const plc={1:12,2:9,3:8,4:7,5:6,6:5,7:4,8:3,9:2,10:1,11:0,12:0};
+
+const $=id=>document.getElementById(id);
+
+function setStatus(t){$("syncStatus").textContent=t}
 
 onAuthStateChanged(auth,user=>{
  if(user && user.uid===ADMIN_UID){
-  $("loginPanel").classList.add("hidden");
-  $("appPanel").classList.remove("hidden");
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  startSync();
  }else{
-  $("appPanel").classList.add("hidden");
-  $("loginPanel").classList.remove("hidden");
-  if(user) signOut(auth);
+  $("app").classList.add("hidden");
+  $("login").classList.remove("hidden");
+  if(user)signOut(auth);
  }
 });
 
-window.login = async function(){
- const email=$("email").value.trim();
- const password=$("password").value;
- if(!email || !password){
-  $("loginStatus").textContent="Email ও Password লিখুন।";
-  return;
- }
+window.login=async()=>{
  $("loginStatus").textContent="লগইন হচ্ছে...";
  try{
-  const result=await signInWithEmailAndPassword(auth,email,password);
-  if(result.user.uid!==ADMIN_UID){
+  const r=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+  if(r.user.uid!==ADMIN_UID){
    await signOut(auth);
    throw new Error("এই অ্যাকাউন্ট Admin নয়।");
   }
-  $("loginStatus").textContent="লগইন সফল।";
  }catch(e){
-  $("loginStatus").textContent="লগইন হয়নি: "+e.message;
+  $("loginStatus").textContent="Login হয়নি: "+e.message;
  }
 };
 
 window.logout=()=>signOut(auth);
 
-window.showPanel=function(which){
- $("adminPanel").classList.toggle("hidden",which!=="admin");
- $("observerPanel").classList.toggle("hidden",which!=="observer");
-};
+function startSync(){
+ setStatus("Connecting...");
+ onValue(ref(db,"teams/roster"),s=>{
+  teams=s.val()||{};
+  renderTeams();
+  renderScores();
+  renderStanding();
+  setStatus("Connected");
+ },e=>setStatus("Error: "+e.message));
 
-function makePC(){
- pc=new RTCPeerConnection({
-  iceServers:[
-   {urls:"stun:stun.l.google.com:19302"}
-  ]
+ onValue(ref(db,"teams/scores"),s=>{
+  scores=s.val()||{};
+  renderScores();
+  renderStanding();
+  setStatus("Connected");
+ },e=>setStatus("Error: "+e.message));
+}
+
+window.show=id=>{
+ ["teams","scores","standing","live"].forEach(x=>{
+  $(x).classList.toggle("hidden",x!==id);
  });
- return pc;
-}
-
-function clearListeners(){
- unsubscribers.forEach(fn=>fn());
- unsubscribers=[];
- pendingCandidates=[];
-}
-
-async function addCandidate(candidate){
- if(!pc)return;
- const ice=new RTCIceCandidate(candidate);
- if(pc.remoteDescription){
-  try{await pc.addIceCandidate(ice)}catch(e){console.log(e)}
- }else{
-  pendingCandidates.push(ice);
- }
-}
-
-async function flushCandidates(){
- for(const ice of pendingCandidates){
-  try{await pc.addIceCandidate(ice)}catch(e){console.log(e)}
- }
- pendingCandidates=[];
-}
-
-window.startAdminConnection=async function(){
- if(!auth.currentUser)return;
- await stopConnection();
-
- $("adminStatus").textContent="● OBSERVER-এর অপেক্ষায়...";
- await set(room,{status:"waiting"});
-
- makePC();
-
- pc.ontrack=e=>{
-  $("adminVideo").srcObject=e.streams[0];
-  $("adminStatus").textContent="● LIVE VIDEO CONNECTED";
- };
-
- pc.onicecandidate=e=>{
-  if(e.candidate){
-   push(ref(db,"lanSessions/main/adminCandidates"),e.candidate.toJSON());
-  }
- };
-
- const answerListener=onValue(
-  ref(db,"lanSessions/main/answer"),
-  async snap=>{
-   if(snap.exists() && !pc.currentRemoteDescription){
-    try{
-     await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
-     await flushCandidates();
-     $("adminStatus").textContent="● ANSWER RECEIVED";
-    }catch(e){console.log(e)}
-   }
-  }
- );
- unsubscribers.push(answerListener);
-
- const candidateListener=onChildAdded(
-  ref(db,"lanSessions/main/observerCandidates"),
-  snap=>addCandidate(snap.val())
- );
- unsubscribers.push(candidateListener);
-
- const offer=await pc.createOffer();
- await pc.setLocalDescription(offer);
- await set(ref(db,"lanSessions/main/offer"),{
-  type:offer.type,
-  sdp:offer.sdp
- });
-
- $("adminStatus").textContent="● OFFER SENT — OBSERVER CONNECT";
+ if(id==="scores")renderScores();
+ if(id==="standing"||id==="live")renderStanding();
 };
 
-window.startObserver=async function(){
- if(!auth.currentUser)return;
- await stopConnection();
-
- try{
-  if(!navigator.mediaDevices?.getDisplayMedia){
-   alert("এই ব্রাউজারে Screen Share পাওয়া যাচ্ছে না। Chrome ব্যবহার করুন।");
-   return;
-  }
-
-  stream=await navigator.mediaDevices.getDisplayMedia({
-   video:true,
-   audio:true
-  });
-
-  $("observerVideo").srcObject=stream;
-  $("observerStatus").textContent="● SCREEN READY — CONNECTING";
-
-  makePC();
-
-  stream.getTracks().forEach(track=>{
-   pc.addTrack(track,stream);
-  });
-
-  pc.onicecandidate=e=>{
-   if(e.candidate){
-    push(ref(db,"lanSessions/main/observerCandidates"),e.candidate.toJSON());
-   }
-  };
-
-  const candidateListener=onChildAdded(
-   ref(db,"lanSessions/main/adminCandidates"),
-   snap=>addCandidate(snap.val())
-  );
-  unsubscribers.push(candidateListener);
-
-  let handled=false;
-  const offerListener=onValue(
-   ref(db,"lanSessions/main/offer"),
-   async snap=>{
-    if(!snap.exists() || handled)return;
-    handled=true;
-    try{
-     await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
-     await flushCandidates();
-
-     const answer=await pc.createAnswer();
-     await pc.setLocalDescription(answer);
-
-     await set(ref(db,"lanSessions/main/answer"),{
-      type:answer.type,
-      sdp:answer.sdp
-     });
-
-     $("observerStatus").textContent="● CONNECTED — SHARING";
-    }catch(e){
-     $("observerStatus").textContent="● CONNECTION ERROR";
-     console.log(e);
-    }
-   }
-  );
-  unsubscribers.push(offerListener);
-
-  stream.getVideoTracks()[0].addEventListener("ended",stopConnection);
- }catch(e){
-  $("observerStatus").textContent="● SHARE NOT STARTED";
-  alert("Screen Share শুরু হয়নি। আবার চেষ্টা করুন।");
- }
-};
-
-window.stopConnection=async function(){
- clearListeners();
-
- if(stream){
-  stream.getTracks().forEach(t=>t.stop());
-  stream=null;
- }
-
- if(pc){
-  pc.close();
-  pc=null;
- }
-
- $("adminVideo").srcObject=null;
- $("observerVideo").srcObject=null;
- $("adminStatus").textContent="● CONNECTION STOPPED";
- $("observerStatus").textContent="● NOT CONNECTED";
-};
-
-function makePlayerInputs(){
- $("playerInputs").innerHTML="";
+function makePlayerForm(){
+ $("playerForm").innerHTML="";
  for(let i=1;i<=4;i++){
-  const input=document.createElement("input");
-  input.className="playerName";
-  input.placeholder="Player "+i+" Name";
-  $("playerInputs").appendChild(input);
+  const box=document.createElement("div");
+  box.innerHTML='<label>Player '+i+' Name</label><input class="pname" placeholder="Player '+i+' Name"><label>Player '+i+' Photo URL (optional)</label><input class="pphoto" placeholder="Photo URL">';
+  $("playerForm").appendChild(box);
  }
 }
-makePlayerInputs();
+makePlayerForm();
+
+window.addTeam=async()=>{
+ const name=$("teamName").value.trim();
+ const names=[...document.querySelectorAll(".pname")].map(x=>x.value.trim());
+ const photos=[...document.querySelectorAll(".pphoto")].map(x=>x.value.trim());
+ if(!name||names.some(x=>!x)){alert("টিমের নাম ও ৪ জনের নাম লিখুন।");return}
+ if(Object.keys(teams).length>=12){alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে।");return}
+ const id="team_"+Date.now();
+ const team={name,logo:$("teamLogo").value.trim(),players:names.map((n,i)=>({name:n,photo:photos[i]}))};
+ try{
+  await set(ref(db,"teams/roster/"+id),team);
+  $("teamName").value="";
+  $("teamLogo").value="";
+  makePlayerForm();
+  alert("টিম যোগ হয়েছে!");
+ }catch(e){alert("সেভ হয়নি: "+e.message)}
+};
+
+window.editTeam=async id=>{
+ const t=teams[id];
+ if(!t)return;
+ const name=prompt("Team Name",t.name);
+ if(name===null)return;
+ const updated={...t,name:name.trim()||t.name,players:[...t.players]};
+ for(let i=0;i<4;i++){
+  const n=prompt("Player "+(i+1)+" Name",t.players[i]?.name||"");
+  if(n===null)return;
+  updated.players[i]={...updated.players[i],name:n};
+ }
+ try{await set(ref(db,"teams/roster/"+id),updated);alert("পরিবর্তন সেভ হয়েছে।")}
+ catch(e){alert(e.message)}
+};
+
+window.deleteTeam=async id=>{
+ if(!confirm("এই টিমটি মুছে ফেলবে?"))return;
+ try{
+  await set(ref(db,"teams/roster/"+id),null);
+  await set(ref(db,"teams/scores/"+id),null);
+ }catch(e){alert(e.message)}
+};
 
 function renderTeams(){
- const root=$("teams");
+ const root=$("teamList");
  root.innerHTML="";
- teams.forEach((team,index)=>{
-  const card=document.createElement("div");
-  card.className="team-card";
+ Object.entries(teams).forEach(([id,t],i)=>{
+  const box=document.createElement("div");
+  box.className="team";
+  const logo=document.createElement("img");
+  logo.src=t.logo||"";
+  logo.alt="Team Logo";
   const title=document.createElement("h3");
-  title.textContent=(index+1)+". "+team.name;
+  title.textContent=(i+1)+". "+t.name;
+  box.append(logo,title);
   const players=document.createElement("div");
   players.className="players";
-  team.players.forEach(name=>{
-   const p=document.createElement("p");
-   p.textContent=name;
-   players.appendChild(p);
+  (t.players||[]).forEach(p=>{
+   const row=document.createElement("div");
+   row.className="player";
+   const img=document.createElement("img");
+   img.src=p.photo||"";
+   img.alt="";
+   const span=document.createElement("span");
+   span.textContent=p.name;
+   row.append(img,span);
+   players.append(row);
   });
+  const edit=document.createElement("button");
+  edit.textContent="EDIT TEAM";
+  edit.onclick=()=>editTeam(id);
   const del=document.createElement("button");
+  del.textContent="DELETE";
   del.className="danger";
-  del.textContent="DELETE TEAM";
-  del.onclick=()=>{
-   teams.splice(index,1);
-   localStorage.setItem("lalpurLanTeamsV1",JSON.stringify(teams));
-   renderTeams();
-  };
-  card.append(title,players,del);
-  root.appendChild(card);
+  del.onclick=()=>deleteTeam(id);
+  box.append(players,edit,del);
+  root.append(box);
  });
+ if(!Object.keys(teams).length)root.textContent="এখনো কোনো টিম যোগ করা হয়নি।";
 }
 
-try{
- teams=JSON.parse(localStorage.getItem("lalpurLanTeamsV1")||"[]");
-}catch(e){teams=[]}
-renderTeams();
+function renderScores(){
+ const id=$("matchSelect").value;
+ const root=$("scoreRows");
+ if(!root)return;
+ root.innerHTML="";
+ Object.entries(teams).forEach(([teamId,t])=>{
+  const old=scores[teamId]?.[id]||{};
+  const row=document.createElement("div");
+  row.className="team";
+  const title=document.createElement("b");
+  title.textContent=t.name;
+  const grid=document.createElement("div");
+  grid.className="grid";
+  const kill=document.createElement("input");
+  kill.className="score";
+  kill.type="number";kill.min="0";kill.max="99";
+  kill.placeholder="Kills";kill.value=old.kills??0;
+  kill.dataset.team=teamId;kill.dataset.field="kills";
+  const place=document.createElement("select");
+  place.className="place";
+  place.dataset.team=teamId;place.dataset.field="placement";
+  place.innerHTML='<option value="0">Placement</option>'+Array.from({length:12},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+' Place</option>').join("");
+  place.value=old.placement??0;
+  grid.append(kill,place);
+  row.append(title,grid);
+  root.append(row);
+ });
+ if(!Object.keys(teams).length)root.textContent="আগে Team Management থেকে টিম যোগ করো।";
+}
 
-window.addTeam=function(){
- const name=$("teamName").value.trim();
- const players=[...document.querySelectorAll(".playerName")]
-  .map(x=>x.value.trim());
-
- if(!name || players.some(x=>!x)){
-  alert("টিমের নাম ও ৪ জনের নাম লিখুন।");
-  return;
- }
- if(teams.length>=12){
-  alert("সর্বোচ্চ ১২টি টিম যোগ করা যাবে।");
-  return;
- }
-
- teams.push({name,players});
- localStorage.setItem("lalpurLanTeamsV1",JSON.stringify(teams));
- $("teamName").value="";
- makePlayerInputs();
- renderTeams();
- alert("টিম যোগ হয়েছে।");
+window.saveScores=async()=>{
+ const match=$("matchSelect").value;
+ const inputs=[...document.querySelectorAll("#scoreRows [data-team]")];
+ const updates={};
+ inputs.forEach(x=>{
+  const id=x.dataset.team;
+  updates[id]??={};
+  updates[id][x.dataset.field]=Number(x.value)||0;
+ });
+ try{
+  for(const [id,value] of Object.entries(updates)){
+   await set(ref(db,"teams/scores/"+id+"/"+match),value);
+  }
+  alert("Match Scores সেভ হয়েছে!");
+ }catch(e){alert("সেভ হয়নি: "+e.message)}
 };
+
+function getTotals(){
+ return Object.entries(teams).map(([id,t])=>{
+  let kills=0,totalPlc=0,total=0;
+  const perMatch={};
+  matches.forEach(([m])=>{
+   const s=scores[id]?.[m]||{};
+   const k=Number(s.kills)||0;
+   const p=Number(s.placement)||0;
+   const pp=plc[p]||0;
+   kills+=k;totalPlc+=pp;
+   perMatch[m]=k+pp;
+   total+=k+pp;
+  });
+  return {id,name:t.name,kills,totalPlc,total,perMatch};
+ }).sort((a,b)=>b.total-a.total||b.kills-a.kills);
+}
+
+function renderStanding(){
+ const list=getTotals();
+ const body=$("standingRows");
+ const live=$("liveRows");
+ const matchBody=$("matchRows");
+ if(!body)return;
+ body.innerHTML="";
+ live.innerHTML="";
+ matchBody.innerHTML="";
+ list.forEach((t,i)=>{
+  const tr=document.createElement("tr");
+  [i+1,t.name,t.kills,t.totalPlc,t.total].forEach(v=>{
+   const td=document.createElement("td");td.textContent=v;tr.append(td);
+  });
+  body.append(tr);
+  const lr=tr.cloneNode(true);live.append(lr);
+  const mr=document.createElement("tr");
+  const name=document.createElement("td");name.textContent=t.name;mr.append(name);
+  matches.forEach(([m])=>{
+   const td=document.createElement("td");td.textContent=t.perMatch[m];mr.append(td);
+  });
+  matchBody.append(mr);
+ });
+ $("champion").textContent=list.length?"🏆 Champion: "+list[0].name:"এখনো কোনো টিম নেই";
+}
 </script>
 </body>
 </html>
