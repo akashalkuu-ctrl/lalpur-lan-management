@@ -5,43 +5,357 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LALPUR LAN OBSERVER</title>
+
 <style>
+*{box-sizing:border-box}
 body{
-  margin:0;
-  background:#080d16;
-  color:white;
-  font-family:Arial,sans-serif;
-  text-align:center;
-  padding:25px 15px;
+ margin:0;
+ padding:15px;
+ background:#080d18;
+ color:white;
+ font-family:Arial,sans-serif
 }
 .box{
-  max-width:500px;
-  margin:40px auto;
-  padding:25px;
-  background:#151e2d;
-  border:1px solid #34445c;
-  border-radius:16px;
+ max-width:600px;
+ margin:25px auto;
+ padding:20px;
+ background:#151e2d;
+ border:1px solid #34445c;
+ border-radius:15px
 }
-h1{color:#38e7a5}
+h1{text-align:center;color:#38e7a5}
+h2{color:#f5c542}
+input{
+ width:100%;
+ padding:13px;
+ margin:7px 0;
+ background:#091321;
+ color:white;
+ border:1px solid #42536c;
+ border-radius:7px
+}
 button{
-  background:#16bd80;
-  color:#06150f;
-  border:0;
-  padding:16px 24px;
-  border-radius:10px;
-  font-size:17px;
-  font-weight:bold;
+ width:100%;
+ padding:14px;
+ margin-top:10px;
+ border:0;
+ border-radius:9px;
+ background:#16bd80;
+ color:#06150f;
+ font-weight:bold;
+ font-size:15px
 }
-p{color:#bdc9d9}
+.stop{background:#a83242;color:white}
+video{
+ width:100%;
+ background:#000;
+ border-radius:10px;
+ margin-top:12px
+}
+.small{font-size:13px;color:#bdc9d9;line-height:1.6}
+.status{color:#38e7a5}
+.hidden{display:none}
 </style>
 </head>
+
 <body>
-<div class="box">
-  <h1>LALPUR LAN</h1>
-  <h2>OBSERVER CONNECTION</h2>
-  <p>Free Fire Match Screen Sharing</p>
-  <button disabled>START SCREEN SHARE</button>
-  <p>Connection system setup pending</p>
+
+<div class="box" id="loginBox">
+ <h1>🏆 LALPUR LAN</h1>
+ <h2>OBSERVER LOGIN</h2>
+ <p class="small">অনুমোদিত Admin অ্যাকাউন্ট দিয়ে লগইন করো।</p>
+
+ <input id="email" type="email" placeholder="Admin Email">
+ <input id="password" type="password" placeholder="Admin Password">
+
+ <button id="loginBtn">LOGIN</button>
+ <p id="loginStatus" class="status"></p>
 </div>
+
+<div class="box hidden" id="shareBox">
+ <h1>🏆 LALPUR LAN</h1>
+ <h2>📡 OBSERVER CONNECTION</h2>
+
+ <p>Free Fire Match Screen Sharing</p>
+ <p id="status" class="status">● LOGIN SUCCESSFUL</p>
+
+ <button id="startBtn">START SCREEN SHARE</button>
+ <button id="stopBtn" class="stop">STOP SCREEN SHARE</button>
+
+ <video id="preview" autoplay playsinline muted></video>
+
+ <p class="small">
+ START চাপলে Screen Share অনুমতি দাও।
+ এরপর Free Fire-এর স্ক্রিন নির্বাচন করো।
+ </p>
+
+ <button id="logoutBtn" style="background:#34445d;color:white">
+ LOGOUT
+ </button>
+</div>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+import {
+ getAuth,
+ signInWithEmailAndPassword,
+ onAuthStateChanged,
+ signOut
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+import {
+ getDatabase,
+ ref,
+ set,
+ push,
+ onValue,
+ onChildAdded
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyAqR7FYfkbwka-IxqM3Y4JNCFXlON__PfU",
+ authDomain:"lalpur-lan-management.firebaseapp.com",
+ databaseURL:"https://lalpur-lan-management-default-rtdb.firebaseio.com",
+ projectId:"lalpur-lan-management",
+ storageBucket:"lalpur-lan-management.firebasestorage.app",
+ messagingSenderId:"704237089803",
+ appId:"1:704237089803:web:1c9cf6a0f0fe299aaf030e"
+};
+
+const ADMIN_UID="hkVmVU6dfHcrlgYRpWPmIdyMuS32";
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+
+const room="lanSessions/main";
+
+const $=id=>document.getElementById(id);
+
+let pc=null;
+let stream=null;
+let listeners=[];
+let pending=[];
+let handled=false;
+
+function clearListeners(){
+ listeners.forEach(unsubscribe=>unsubscribe());
+ listeners=[];
+ pending=[];
+}
+
+onAuthStateChanged(auth,user=>{
+ if(user && user.uid===ADMIN_UID){
+  $("loginBox").classList.add("hidden");
+  $("shareBox").classList.remove("hidden");
+ }else{
+  $("shareBox").classList.add("hidden");
+  $("loginBox").classList.remove("hidden");
+
+  if(user) signOut(auth);
+ }
+});
+
+$("loginBtn").onclick=async()=>{
+ $("loginStatus").textContent="লগইন হচ্ছে...";
+
+ try{
+  const result=await signInWithEmailAndPassword(
+   auth,
+   $("email").value.trim(),
+   $("password").value
+  );
+
+  if(result.user.uid!==ADMIN_UID){
+   await signOut(auth);
+   throw new Error("এই অ্যাকাউন্ট Admin নয়।");
+  }
+
+  $("loginStatus").textContent="লগইন সফল হয়েছে।";
+
+ }catch(error){
+  $("loginStatus").textContent="লগইন হয়নি: "+error.message;
+ }
+};
+
+function makePC(){
+
+ pc=new RTCPeerConnection({
+  iceServers:[
+   {urls:"stun:stun.l.google.com:19302"}
+  ]
+ });
+
+ pc.onicecandidate=event=>{
+  if(event.candidate && pc){
+   push(
+    ref(db,room+"/observerCandidates"),
+    event.candidate.toJSON()
+   );
+  }
+ };
+
+ pc.onconnectionstatechange=()=>{
+  if(pc){
+   $("status").textContent=
+    "● CONNECTION: "+pc.connectionState;
+  }
+ };
+}
+
+async function addCandidate(data){
+
+ if(!pc || !data)return;
+
+ const candidate=new RTCIceCandidate(data);
+
+ if(pc.remoteDescription){
+  try{
+   await pc.addIceCandidate(candidate);
+  }catch(error){
+   console.log(error);
+  }
+ }else{
+  pending.push(candidate);
+ }
+}
+
+async function flushCandidates(){
+
+ for(const candidate of pending){
+  try{
+   await pc.addIceCandidate(candidate);
+  }catch(error){
+   console.log(error);
+  }
+ }
+
+ pending=[];
+}
+
+$("startBtn").onclick=async()=>{
+
+ if(!auth.currentUser || auth.currentUser.uid!==ADMIN_UID){
+  alert("আগে Admin Login করো।");
+  return;
+ }
+
+ if(!navigator.mediaDevices?.getDisplayMedia){
+  alert("এই ব্রাউজারে Screen Share পাওয়া যাচ্ছে না।");
+  return;
+ }
+
+ await stopShare();
+
+ try{
+
+  stream=await navigator.mediaDevices.getDisplayMedia({
+   video:true,
+   audio:false
+  });
+
+  $("preview").srcObject=stream;
+  $("status").textContent="● SCREEN READY";
+
+  makePC();
+
+  stream.getTracks().forEach(track=>{
+   pc.addTrack(track,stream);
+  });
+
+  await set(ref(db,room+"/observerCandidates"),null);
+  await set(ref(db,room+"/answer"),null);
+
+  const candidateListener=onChildAdded(
+   ref(db,room+"/adminCandidates"),
+   snapshot=>{
+    addCandidate(snapshot.val());
+   }
+  );
+
+  listeners.push(candidateListener);
+
+  const offerListener=onValue(
+   ref(db,room+"/offer"),
+   async snapshot=>{
+
+    if(!snapshot.exists() || handled || !pc)return;
+
+    handled=true;
+
+    try{
+
+     await pc.setRemoteDescription(
+      new RTCSessionDescription(snapshot.val())
+     );
+
+     await flushCandidates();
+
+     const answer=await pc.createAnswer();
+
+     await pc.setLocalDescription(answer);
+
+     await set(ref(db,room+"/answer"),{
+      type:answer.type,
+      sdp:answer.sdp
+     });
+
+     $("status").textContent="● ANSWER SENT — CONNECTING";
+
+    }catch(error){
+
+     $("status").textContent="● CONNECTION ERROR";
+     console.log(error);
+
+    }
+   }
+  );
+
+  listeners.push(offerListener);
+
+  stream.getVideoTracks()[0].addEventListener(
+   "ended",
+   ()=>stopShare()
+  );
+
+ }catch(error){
+
+  $("status").textContent="● SCREEN SHARE NOT STARTED";
+  alert("Screen Share শুরু হয়নি। আবার চেষ্টা করো।");
+  console.log(error);
+
+ }
+};
+
+async function stopShare(){
+
+ clearListeners();
+ handled=false;
+
+ if(stream){
+  stream.getTracks().forEach(track=>track.stop());
+  stream=null;
+ }
+
+ if(pc){
+  pc.close();
+  pc=null;
+ }
+
+ $("preview").srcObject=null;
+ $("status").textContent="● NOT CONNECTED";
+}
+
+$("stopBtn").onclick=stopShare;
+
+$("logoutBtn").onclick=async()=>{
+ await stopShare();
+ await signOut(auth);
+};
+
+</script>
 </body>
 </html>
