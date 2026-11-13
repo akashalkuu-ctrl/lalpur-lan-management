@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LALPUR Tournament Overlay</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+#stage{width:100vw;height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:1.2vw;gap:1vh;text-shadow:0 1px 3px #000}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:1vw}.brand,.matchbox,.panel{background:rgba(5,12,25,.86);border:1px solid rgba(255,255,255,.2);border-radius:10px;backdrop-filter:blur(4px)}
+.brand{padding:10px 16px;font-weight:900;font-size:clamp(14px,2vw,28px);letter-spacing:1px}.matchbox{padding:8px 13px;text-align:right;font-weight:800;font-size:clamp(12px,1.5vw,20px)}.muted{color:#b7c5d8;font-size:.78em;font-weight:600}
+.main{display:flex;justify-content:space-between;align-items:flex-end;gap:1vw}.panel{padding:10px;min-width:25vw;max-width:36vw}.panel h2{margin:0 0 7px;font-size:clamp(12px,1.4vw,19px);letter-spacing:.6px}.teamrow{display:grid;grid-template-columns:1fr 44px 52px;gap:7px;align-items:center;padding:5px 7px;margin:3px 0;background:rgba(255,255,255,.08);border-radius:5px;font-size:clamp(10px,1.1vw,15px);font-weight:700}.teamrow .num{text-align:right;font-variant-numeric:tabular-nums}.teamrow .team{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.teamrow.leader{background:rgba(220,169,48,.3);border:1px solid rgba(255,210,90,.65)}
+.feed{min-width:24vw;max-width:33vw}.feedline{padding:5px 8px;margin:4px 0;border-left:3px solid #ffb22c;background:rgba(255,255,255,.09);font-size:clamp(10px,1vw,14px);font-weight:700;overflow-wrap:anywhere}.footer{display:flex;justify-content:space-between;align-items:center;gap:10px}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{background:rgba(5,12,25,.88);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:7px 10px;font-size:clamp(10px,1vw,14px);font-weight:800}.error{color:#ffb5b5;font-size:12px;background:rgba(80,0,0,.8);padding:6px 9px;border-radius:5px;display:none}
+@media(max-width:650px){#stage{padding:8px}.panel{min-width:42vw;max-width:48vw;padding:7px}.feed{min-width:38vw;max-width:45vw}.brand{padding:7px 9px}.teamrow{grid-template-columns:1fr 30px 35px;gap:4px;padding:4px}.top{align-items:center}}
+</style></head>
+<body><div id="stage">
+ <div class="top"><div class="brand">LALPUR ORGANIZATION <span class="muted">| FREE FIRE</span></div><div class="matchbox"><div id="match">MATCH 1</div><div class="muted" id="map">MAP: BERMUDA</div><div class="muted" id="clock">LIVE</div></div></div>
+ <div class="main"><section class="panel"><h2>LIVE SCOREBOARD</h2><div id="teams"><div class="muted">Waiting for tournament data…</div></div></section><section class="panel feed"><h2> KILL FEED</h2><div id="feed"><div class="muted">No kill updates yet</div></div></section></div>
+ <div class="footer"><div class="stats"><div class="stat">ALIVE TEAMS: <span id="aliveTeams">—</span></div><div class="stat">ALIVE PLAYERS: <span id="alivePlayers">—</span></div><div class="stat">AREA: <span id="area">—</span></div></div><div class="error" id="error"></div></div>
+</div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+const firebaseConfig={apiKey:'AIzaSyAqR7FYfkbwka-IxqM3Y4JNCFXlON__PfU',authDomain:'lalpur-lan-management.firebaseapp.com',databaseURL:'https://lalpur-lan-management-default-rtdb.firebaseio.com',projectId:'lalpur-lan-management',storageBucket:'lalpur-lan-management.firebasestorage.app',messagingSenderId:'704237089803',appId:'1:704237089803:web:1c9cf6a0f0fe299aaf030e'};
+const app=initializeApp(firebaseConfig), db=getDatabase(app);let roster={},scores={},broadcast={};
+const $=id=>document.getElementById(id);const maps=['Bermuda','Purgatory','Kalahari','Nexterra','Solara','Kalahari'];const placePts={1:12,2:9,3:8,4:7,5:6,6:5,7:4,8:3,9:2,10:1};
+function currentMatch(){let n=Number(broadcast.match||1);return Math.min(6,Math.max(1,Number.isFinite(n)?n:1))}
+function matchScore(n,id){return scores['match'+n]?.[id]||{kills:0,placement:0}}
+function points(s){let p=Number(s.placement||0);return Number(s.kills||0)+(placePts[p]||0)}
+function teamName(id,t){return t?.name||id}
+function render(){let n=currentMatch(),list=Object.entries(roster||{}).map(([id,t])=>{let s=matchScore(n,id);return{id,name:teamName(id,t),kills:Number(s.kills||0),pts:points(s),placement:Number(s.placement||0),totalKills:Array.from({length:6},(_,i)=>Number(matchScore(i+1,id).kills||0)).reduce((a,b)=>a+b,0),totalPts:Array.from({length:6},(_,i)=>points(matchScore(i+1,id))).reduce((a,b)=>a+b,0)}}).sort((a,b)=>b.pts-a.pts||b.kills-a.kills||a.name.localeCompare(b.name)).slice(0,12);
+$('match').textContent='MATCH '+n;$('map').textContent='MAP: '+(broadcast.map||maps[n-1]||'—').toString().toUpperCase();$('clock').textContent=broadcast.time||'LIVE';$('aliveTeams').textContent=broadcast.aliveTeams??'—';$('alivePlayers').textContent=broadcast.alivePlayers??'—';$('area').textContent=broadcast.area||'—';
+$('teams').innerHTML=list.length?list.map((t,i)=>`<div class="teamrow ${i===0?'leader':''}"><span class="team">${i+1}. ${esc(t.name)}</span><span class="num">${t.kills}K</span><span class="num">${t.pts} P</span></div>`).join(''):'<div class="muted">No teams added yet</div>';
+let f=broadcast.killFeed;let lines=Array.isArray(f)?f.map(x=>typeof x==='string'?x:(x?.text||x?.message||[x?.killer,x?.victim].filter(Boolean).join(' → '))):typeof f==='string'?f.split(/\n|\|/).filter(Boolean):f&&typeof f==='object'?Object.values(f).map(x=>typeof x==='string'?x:(x?.text||x?.message||'' )).filter(Boolean):[];
+$('feed').innerHTML=lines.length?lines.slice(-5).reverse().map(x=>`<div class="feedline">${esc(String(x))}</div>`).join(''):'<div class="muted">No kill updates yet</div>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+onValue(ref(db,'teams/roster'),v=>{roster=v.val()||{};render()},err=>showErr(err));
+onValue(ref(db,'teams/scores'),v=>{scores=v.val()||{};render()},err=>showErr(err));
+onValue(ref(db,'broadcast/main'),v=>{broadcast=v.val()||{};render()},err=>showErr(err));
+function showErr(e){$('error').style.display='block';$('error').textContent='Firebase: '+(e?.message||'Read permission required')}
+</script></body></html>
