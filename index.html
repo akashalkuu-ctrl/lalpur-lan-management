@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LALPUR LAN MANAGEMENT</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080d18;color:#fff;font-family:Arial,sans-serif}
@@ -17,6 +18,7 @@ input,select{width:100%;padding:11px;margin:5px 0;background:#091321;color:white
 button{background:#e5ad35;color:#111;border:0;padding:12px;border-radius:8px;font-weight:bold;margin:5px 0;cursor:pointer}
 .secondary{background:#34445d;color:white}
 .danger{background:#a83242;color:white}
+.green{background:#16bd80;color:#06150f}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .players{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .team{background:#0b1628;padding:12px;border:1px solid #34445d;border-radius:9px;margin:10px 0}
@@ -33,11 +35,105 @@ th{color:#f5c542}
 input.score{min-width:65px;width:65px}
 select.place{min-width:90px;width:90px}
 .champion{color:#f5c542;font-size:20px;text-align:center}
-#liveVideo{width:100%;background:#000;border-radius:10px;min-height:180px}
+video{width:100%;background:#000;border-radius:10px;min-height:180px}
+
+/* BROADCAST DESIGN */
+.broadcast-screen{
+ position:relative;
+ width:100%;
+ aspect-ratio:16/9;
+ min-height:260px;
+ overflow:hidden;
+ background:#03070d;
+ border:2px solid #e5ad35;
+ border-radius:10px;
+}
+#broadcastVideo{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ min-height:0;
+ object-fit:contain;
+ background:#000;
+ border-radius:0;
+}
+.broadcast-top{
+ position:absolute;
+ top:0;left:0;right:0;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:5px;
+ padding:7px;
+ background:#071323ed;
+ border-bottom:2px solid #e5ad35;
+ font-size:clamp(9px,1.5vw,15px);
+ font-weight:bold;
+}
+.broadcast-brand{color:#f5c542}
+.broadcast-live{color:#ff5555}
+.broadcast-left{
+ position:absolute;
+ top:52px;left:7px;
+ width:27%;
+ background:#071323e8;
+ border:1px solid #e5ad35;
+ border-radius:6px;
+ padding:5px;
+}
+.broadcast-right{
+ position:absolute;
+ top:52px;right:7px;
+ width:28%;
+ background:#071323e8;
+ border:1px solid #e5ad35;
+ border-radius:6px;
+ padding:5px;
+}
+.broadcast-bottom{
+ position:absolute;
+ bottom:7px;left:7px;
+ width:42%;
+ background:#071323ed;
+ border:1px solid #e5ad35;
+ border-radius:6px;
+ padding:6px;
+}
+.broadcast-map{
+ position:absolute;
+ bottom:7px;right:7px;
+ width:20%;
+ height:22%;
+ background:#071323ed;
+ border:1px solid #e5ad35;
+ border-radius:6px;
+ overflow:hidden;
+}
+.broadcast-map img{width:100%;height:100%;object-fit:contain}
+.broadcast-screen h3{
+ margin:0 0 5px;
+ color:#f5c542;
+ font-size:clamp(8px,1.3vw,13px);
+}
+.broadcast-screen table{font-size:clamp(7px,1.1vw,11px)}
+.broadcast-screen td,.broadcast-screen th{padding:3px 2px}
+.feed-item{
+ font-size:clamp(7px,1vw,11px);
+ padding:3px;
+ border-bottom:1px solid #34445d;
+}
+@media(max-width:550px){
+ .broadcast-screen{min-height:210px}
+ .broadcast-left,.broadcast-right{top:45px}
+ .broadcast-top{padding:5px}
+ .broadcast-bottom{width:45%}
+ .broadcast-map{width:20%;height:20%}
+}
 </style>
 </head>
-<body>
 
+<body>
 <header>
 <h1>🏆 LALPUR LAN</h1>
 <p>ESPORTS LIVE MANAGEMENT SYSTEM</p>
@@ -63,11 +159,13 @@ select.place{min-width:90px;width:90px}
 <button onclick="show('standing')">OVERALL STANDING</button>
 <button onclick="show('live')">LIVE SCOREBOARD</button>
 <button onclick="show('observer')">OBSERVER LIVE</button>
+<button onclick="show('broadcast')">🔴 TOURNAMENT BROADCAST</button>
 </div>
 <button class="secondary" onclick="logout()">LOGOUT</button>
 <p class="small">Firebase Sync: <span id="syncStatus">Connecting...</span></p>
 </div>
 
+<!-- OBSERVER -->
 <section id="observer" class="hidden">
 <div class="card">
 <h2>📡 OBSERVER LIVE SCREEN</h2>
@@ -79,22 +177,23 @@ select.place{min-width:90px;width:90px}
 </div>
 </section>
 
+<!-- TEAM MANAGEMENT -->
 <section id="teams">
 <div class="card">
 <h2>🏆 ADD NEW TEAM</h2>
-<p class="small">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার। ছবি পরে যোগ করা যাবে।</p>
+<p class="small">সর্বোচ্চ ১২টি টিম। প্রতি টিমে ৪ জন প্লেয়ার।</p>
 <input id="teamName" placeholder="Team Name">
 <input id="teamLogo" placeholder="Team Logo Image URL (optional)">
 <div id="playerForm"></div>
 <button onclick="addTeam()">ADD TEAM</button>
 </div>
-
 <div class="card">
 <h2>📋 TEAM LIST</h2>
 <div id="teamList">Loading...</div>
 </div>
 </section>
 
+<!-- MATCH SCORING -->
 <section id="scores" class="hidden">
 <div class="card">
 <h2>🎮 MATCH SCORING</h2>
@@ -113,6 +212,7 @@ select.place{min-width:90px;width:90px}
 </div>
 </section>
 
+<!-- OVERALL STANDING -->
 <section id="standing" class="hidden">
 <div class="card">
 <h2>🥇 OVERALL STANDING</h2>
@@ -135,6 +235,7 @@ select.place{min-width:90px;width:90px}
 </div>
 </section>
 
+<!-- LIVE SCOREBOARD -->
 <section id="live" class="hidden">
 <div class="card">
 <h2>🔴 LIVE SCOREBOARD</h2>
@@ -146,6 +247,110 @@ select.place{min-width:90px;width:90px}
 </table>
 </div>
 </div>
+</section>
+
+<!-- BROADCAST ADMIN + SCREEN -->
+<section id="broadcast" class="hidden">
+
+<div class="card">
+<h2>🔴 TOURNAMENT BROADCAST SCREEN</h2>
+<p class="small">এই স্ক্রিনে গেমের ভিডিওর উপর টুর্নামেন্টের তথ্য দেখা যাবে। PRISM Live দিয়ে ফোনের স্ক্রিন সম্প্রচার করা যাবে।</p>
+
+<div class="broadcast-screen">
+
+<video id="broadcastVideo" autoplay playsinline muted></video>
+
+<div class="broadcast-top">
+ <span class="broadcast-brand">🏆 LALPUR LAN</span>
+ <span id="outGame">GAME 1</span>
+ <span id="outTime">12:50</span>
+ <span id="outAlive">36 ALIVE</span>
+ <span class="broadcast-live">● LIVE</span>
+</div>
+
+<div class="broadcast-left">
+ <h3>GAME STANDINGS — ELIMS</h3>
+ <table>
+ <thead><tr><th>#</th><th>TEAM</th><th>KILLS</th></tr></thead>
+ <tbody id="outTeamKills"></tbody>
+ </table>
+</div>
+
+<div class="broadcast-right">
+ <h3>🔫 KILL FEED</h3>
+ <div id="outKillFeed"></div>
+</div>
+
+<div class="broadcast-bottom">
+ <h3 id="outPlayerTitle">PLAYER SCOREBOARD</h3>
+ <div id="outPlayerKills"></div>
+ <p id="outCurrentPlayer" style="font-size:clamp(8px,1vw,11px);margin:4px 0;color:#f5c542">SPECTATING: -</p>
+ <p id="outArea" style="font-size:clamp(8px,1vw,11px);margin:3px 0">AREA: -</p>
+</div>
+
+<div class="broadcast-map">
+ <img id="outMap" class="hidden" alt="Mini Map">
+ <div id="mapPlaceholder" style="font-size:10px;text-align:center;padding:8px;color:#aab7ca">MINI MAP</div>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<h2>⚙️ BROADCAST ADMIN CONTROL</h2>
+<p class="small">এখানে তথ্য পরিবর্তন করে SAVE BROADCAST চাপবে।</p>
+
+<label>Game Number</label>
+<select id="bcGame">
+<option>GAME 1</option><option>GAME 2</option>
+<option>GAME 3</option><option>GAME 4</option>
+<option>GAME 5</option><option>GAME 6</option>
+</select>
+
+<label>সময় বাকি</label>
+<input id="bcTime" placeholder="যেমন: 12:50">
+
+<div class="grid">
+<div>
+<label>জীবিত প্লেয়ার</label>
+<input id="bcAlivePlayers" type="number" min="0" placeholder="36">
+</div>
+<div>
+<label>জীবিত টিম</label>
+<input id="bcAliveTeams" type="number" min="0" placeholder="10">
+</div>
+</div>
+
+<label>বর্তমান এরিয়া</label>
+<input id="bcArea" placeholder="যেমন: Zipway">
+
+<label>বর্তমানে দেখা হচ্ছে যে প্লেয়ার</label>
+<input id="bcCurrentPlayer" placeholder="যেমন: XP.Z4CK">
+
+<label>Mini Map Image URL</label>
+<input id="bcMap" placeholder="Map image URL (optional)">
+
+<button onclick="renderBroadcastTeamInputs()" class="secondary">REFRESH TEAM KILL LIST</button>
+<h2>🏆 ১২ টিমের KILL UPDATE</h2>
+<div id="bcTeamKills"></div>
+
+<h2>👤 PLAYER KILL UPDATE</h2>
+<label>টিম নির্বাচন</label>
+<select id="bcPlayerTeam" onchange="renderBroadcastPlayerInputs()">
+<option value="">টিম নির্বাচন করো</option>
+</select>
+<div id="bcPlayerKills"></div>
+
+<h2>⚔️ KILL FEED UPDATE</h2>
+<input id="bcKiller" placeholder="যে Player Kill করেছে">
+<input id="bcVictim" placeholder="যে Player eliminated হয়েছে">
+<button onclick="addKillFeed()" class="secondary">ADD KILL FEED</button>
+<div id="bcFeedAdmin" class="small"></div>
+
+<button class="green" onclick="saveBroadcast()">💾 SAVE BROADCAST</button>
+<p id="bcStatus" class="status"></p>
+</div>
+
 </section>
 
 </div>
@@ -182,6 +387,12 @@ const db=getDatabase(appFirebase);
 let teams={};
 let scores={};
 let syncStarted=false;
+let broadcastData={};
+let killFeed=[];
+let adminPC=null;
+let adminListeners=[];
+let adminPending=[];
+let remoteStream=null;
 
 const matches=[
  ["m1","Bermuda"],["m2","Purgatory"],
@@ -192,6 +403,7 @@ const matches=[
 const plc={1:12,2:9,3:8,4:7,5:6,6:5,7:4,8:3,9:2,10:1,11:0,12:0};
 const $=id=>document.getElementById(id);
 const room="lanSessions/main";
+const bcPath="broadcast/main";
 
 function setStatus(t){$("syncStatus").textContent=t}
 
@@ -238,6 +450,9 @@ function startSync(){
   renderTeams();
   renderScores();
   renderStanding();
+  renderBroadcastTeamInputs();
+  renderBroadcastPlayerTeamSelect();
+  renderBroadcastScreen();
   setStatus("Connected");
  },e=>setStatus("Error: "+e.message));
 
@@ -247,14 +462,30 @@ function startSync(){
   renderStanding();
   setStatus("Connected");
  },e=>setStatus("Error: "+e.message));
+
+ onValue(ref(db,bcPath),s=>{
+  broadcastData=s.val()||{};
+  killFeed=Array.isArray(broadcastData.killFeed)?broadcastData.killFeed:[];
+  fillBroadcastForm();
+  renderBroadcastScreen();
+  renderBroadcastFeedAdmin();
+ },e=>{
+  $("bcStatus").textContent="Broadcast Sync Error: "+e.message;
+ });
 }
 
 window.show=id=>{
- ["teams","scores","standing","live","observer"].forEach(x=>{
+ ["teams","scores","standing","live","observer","broadcast"].forEach(x=>{
   $(x).classList.toggle("hidden",x!==id);
  });
  if(id==="scores")renderScores();
  if(id==="standing"||id==="live")renderStanding();
+ if(id==="broadcast"){
+  renderBroadcastTeamInputs();
+  renderBroadcastPlayerTeamSelect();
+  renderBroadcastPlayerInputs();
+  renderBroadcastScreen();
+ }
 };
 
 function makePlayerForm(){
@@ -450,7 +681,6 @@ function getTotals(){
    const k=Number(s.kills)||0;
    const p=Number(s.placement)||0;
    const pp=plc[p]||0;
-
    kills+=k;
    totalPlc+=pp;
    perMatch[m]=k+pp;
@@ -474,13 +704,11 @@ function renderStanding(){
 
  list.forEach((t,i)=>{
   const tr=document.createElement("tr");
-
   [i+1,t.name,t.kills,t.totalPlc,t.total].forEach(v=>{
    const td=document.createElement("td");
    td.textContent=v;
    tr.append(td);
   });
-
   body.append(tr);
   live.append(tr.cloneNode(true));
 
@@ -494,7 +722,6 @@ function renderStanding(){
    td.textContent=t.perMatch[m];
    mr.append(td);
   });
-
   matchBody.append(mr);
  });
 
@@ -503,12 +730,226 @@ function renderStanding(){
   "এখনো কোনো টিম নেই";
 }
 
-/* ADMIN WEBRTC RECEIVER */
+/* BROADCAST ADMIN */
 
-let adminPC=null;
-let adminListeners=[];
-let adminPending=[];
-let remoteStream=null;
+function renderBroadcastTeamInputs(){
+ const root=$("bcTeamKills");
+ if(!root)return;
+ root.innerHTML="";
+
+ Object.entries(teams).forEach(([id,t])=>{
+  const row=document.createElement("div");
+  row.className="grid";
+  const name=document.createElement("label");
+  name.textContent=t.name;
+  const input=document.createElement("input");
+  input.type="number";
+  input.min="0";
+  input.placeholder="Elims";
+  input.dataset.bcteam=id;
+  input.value=broadcastData.teamKills?.[id]??0;
+  row.append(name,input);
+  root.append(row);
+ });
+}
+
+function renderBroadcastTeamPlayerSelect(){
+ const select=$("bcPlayerTeam");
+ if(!select)return;
+ const old=select.value||broadcastData.selectedTeam||"";
+ select.innerHTML='<option value="">টিম নির্বাচন করো</option>';
+
+ Object.entries(teams).forEach(([id,t])=>{
+  const option=document.createElement("option");
+  option.value=id;
+  option.textContent=t.name;
+  select.append(option);
+ });
+
+ if(teams[old])select.value=old;
+}
+
+function renderBroadcastPlayerInputs(){
+ const root=$("bcPlayerKills");
+ if(!root)return;
+ root.innerHTML="";
+ const teamId=$("bcPlayerTeam").value;
+ if(!teamId||!teams[teamId])return;
+
+ const players=teams[teamId].players||[];
+ players.forEach((p,i)=>{
+  const row=document.createElement("div");
+  row.className="grid";
+  const label=document.createElement("label");
+  label.textContent=p.name||("Player "+(i+1));
+  const input=document.createElement("input");
+  input.type="number";
+  input.min="0";
+  input.placeholder="Kills";
+  input.dataset.playerkill=i;
+  input.value=broadcastData.playerKills?.[teamId]?.[i]??0;
+  row.append(label,input);
+  root.append(row);
+ });
+}
+
+function fillBroadcastForm(){
+ $("bcGame").value=broadcastData.game||"GAME 1";
+ $("bcTime").value=broadcastData.time||"";
+ $("bcAlivePlayers").value=broadcastData.alivePlayers??"";
+ $("bcAliveTeams").value=broadcastData.aliveTeams??"";
+ $("bcArea").value=broadcastData.area||"";
+ $("bcCurrentPlayer").value=broadcastData.currentPlayer||"";
+ $("bcMap").value=broadcastData.mapImageUrl||"";
+
+ renderBroadcastTeamInputs();
+ renderBroadcastTeamPlayerSelect();
+ renderBroadcastPlayerInputs();
+}
+
+function renderBroadcastScreen(){
+ $("outGame").textContent=broadcastData.game||"GAME 1";
+ $("outTime").textContent=broadcastData.time||"--:--";
+ $("outAlive").textContent=(broadcastData.alivePlayers??"--")+" ALIVE";
+ $("outArea").textContent="AREA: "+(broadcastData.area||"-");
+ $("outCurrentPlayer").textContent="SPECTATING: "+(broadcastData.currentPlayer||"-");
+
+ const teamBody=$("outTeamKills");
+ teamBody.innerHTML="";
+ const list=Object.entries(teams).map(([id,t])=>({
+  id,name:t.name,
+  kills:Number(broadcastData.teamKills?.[id])||0
+ })).sort((a,b)=>b.kills-a.kills);
+
+ list.forEach((t,i)=>{
+  const tr=document.createElement("tr");
+  [i+1,t.name,t.kills].forEach(v=>{
+   const td=document.createElement("td");
+   td.textContent=v;
+   tr.append(td);
+  });
+  teamBody.append(tr);
+ });
+
+ const selected=broadcastData.selectedTeam;
+ const playerRoot=$("outPlayerKills");
+ playerRoot.innerHTML="";
+ const team=teams[selected];
+
+ $("outPlayerTitle").textContent=team?
+  team.name+" — PLAYER KILLS":"PLAYER SCOREBOARD";
+
+ if(team){
+  (team.players||[]).forEach((p,i)=>{
+   const row=document.createElement("div");
+   row.style.cssText="display:flex;justify-content:space-between;font-size:clamp(7px,1vw,11px);padding:2px";
+   const name=document.createElement("span");
+   name.textContent=p.name||("Player "+(i+1));
+   const kills=document.createElement("b");
+   kills.textContent=Number(broadcastData.playerKills?.[selected]?.[i])||0;
+   row.append(name,kills);
+   playerRoot.append(row);
+  });
+ }else{
+  playerRoot.textContent="Admin থেকে টিম নির্বাচন করো";
+ }
+
+ const feed=$("outKillFeed");
+ feed.innerHTML="";
+ const recent=killFeed.slice(-5).reverse();
+ recent.forEach(item=>{
+  const div=document.createElement("div");
+  div.className="feed-item";
+  div.textContent=(item.killer||"?")+"  ➜  "+(item.victim||"?");
+  feed.append(div);
+ });
+ if(!recent.length)feed.textContent="No Kill Feed";
+
+ const map=$("outMap");
+ const placeholder=$("mapPlaceholder");
+ if(broadcastData.mapImageUrl){
+  map.src=broadcastData.mapImageUrl;
+  map.classList.remove("hidden");
+  placeholder.classList.add("hidden");
+  map.onerror=()=>{
+   map.classList.add("hidden");
+   placeholder.classList.remove("hidden");
+   placeholder.textContent="MAP IMAGE ERROR";
+  };
+ }else{
+  map.removeAttribute("src");
+  map.classList.add("hidden");
+  placeholder.classList.remove("hidden");
+  placeholder.textContent="MINI MAP";
+ }
+}
+
+function renderBroadcastFeedAdmin(){
+ const root=$("bcFeedAdmin");
+ if(!root)return;
+ root.innerHTML="";
+ killFeed.slice(-8).reverse().forEach((item,index)=>{
+  const row=document.createElement("div");
+  row.textContent=(item.killer||"?")+" ➜ "+(item.victim||"?");
+  root.append(row);
+ });
+}
+
+window.addKillFeed=()=>{
+ const killer=$("bcKiller").value.trim();
+ const victim=$("bcVictim").value.trim();
+ if(!killer||!victim){
+  alert("Killer ও Eliminated Player-এর নাম লিখো।");
+  return;
+ }
+ killFeed.push({killer,victim,at:Date.now()});
+ $("bcKiller").value="";
+ $("bcVictim").value="";
+ renderBroadcastFeedAdmin();
+ $("bcStatus").textContent="Kill Feed যোগ হয়েছে। Save Broadcast চাপো।";
+};
+
+window.saveBroadcast=async()=>{
+ const teamKills={};
+ document.querySelectorAll("[data-bcteam]").forEach(input=>{
+  teamKills[input.dataset.bcteam]=Number(input.value)||0;
+ });
+
+ const selectedTeam=$("bcPlayerTeam").value;
+ const playerKills={...(broadcastData.playerKills||{})};
+
+ if(selectedTeam){
+  playerKills[selectedTeam]=[0,0,0,0];
+  document.querySelectorAll("[data-playerkill]").forEach(input=>{
+   playerKills[selectedTeam][Number(input.dataset.playerkill)]=Number(input.value)||0;
+  });
+ }
+
+ const data={
+  game:$("bcGame").value,
+  time:$("bcTime").value.trim(),
+  alivePlayers:Number($("bcAlivePlayers").value)||0,
+  aliveTeams:Number($("bcAliveTeams").value)||0,
+  area:$("bcArea").value.trim(),
+  currentPlayer:$("bcCurrentPlayer").value.trim(),
+  mapImageUrl:$("bcMap").value.trim(),
+  selectedTeam,
+  teamKills,
+  playerKills,
+  killFeed:killFeed.slice(-30),
+  updatedAt:Date.now()
+ };
+
+ $("bcStatus").textContent="সেভ হচ্ছে...";
+ try{
+  await set(ref(db,bcPath),data);
+  $("bcStatus").textContent="Broadcast তথ্য সেভ হয়েছে!";
+ }catch(e){
+  $("bcStatus").textContent="সেভ হয়নি: "+e.message;
+ }
+};
+
+/* ADMIN WEBRTC RECEIVER */
 
 function videoStatus(text){
  $("videoStatus").textContent="● "+text;
@@ -522,13 +963,9 @@ function clearAdminListeners(){
 
 async function addAdminCandidate(data){
  if(!adminPC||!data)return;
-
  const candidate=new RTCIceCandidate(data);
-
  if(adminPC.remoteDescription){
-  try{
-   await adminPC.addIceCandidate(candidate);
-  }catch(e){console.log(e)}
+  try{await adminPC.addIceCandidate(candidate)}catch(e){console.log(e)}
  }else{
   adminPending.push(candidate);
  }
@@ -536,15 +973,12 @@ async function addAdminCandidate(data){
 
 async function flushAdminCandidates(){
  for(const c of adminPending){
-  try{
-   await adminPC.addIceCandidate(c);
-  }catch(e){console.log(e)}
+  try{await adminPC.addIceCandidate(c)}catch(e){console.log(e)}
  }
  adminPending=[];
 }
 
 async function connectObserver(){
-
  if(!auth.currentUser||auth.currentUser.uid!==ADMIN_UID){
   alert("আগে Admin Login করো।");
   return;
@@ -554,36 +988,30 @@ async function connectObserver(){
 
  try{
   videoStatus("CONNECTING...");
-
   adminPC=new RTCPeerConnection({
-   iceServers:[
-    {urls:"stun:stun.l.google.com:19302"}
-   ]
+   iceServers:[{urls:"stun:stun.l.google.com:19302"}]
   });
 
   remoteStream=new MediaStream();
   $("liveVideo").srcObject=remoteStream;
+  $("broadcastVideo").srcObject=remoteStream;
 
   adminPC.ontrack=event=>{
    event.streams[0]?.getTracks().forEach(track=>{
     remoteStream.addTrack(track);
    });
    $("liveVideo").play().catch(()=>{});
+   $("broadcastVideo").play().catch(()=>{});
    videoStatus("VIDEO RECEIVING");
   };
 
   adminPC.onconnectionstatechange=()=>{
-   if(adminPC){
-    videoStatus("CONNECTION: "+adminPC.connectionState);
-   }
+   if(adminPC)videoStatus("CONNECTION: "+adminPC.connectionState);
   };
 
   adminPC.onicecandidate=event=>{
    if(event.candidate&&adminPC){
-    push(
-     ref(db,room+"/adminCandidates"),
-     event.candidate.toJSON()
-    );
+    push(ref(db,room+"/adminCandidates"),event.candidate.toJSON());
    }
   };
 
@@ -598,14 +1026,11 @@ async function connectObserver(){
   adminListeners.push(candidateListener);
 
   let answerHandled=false;
-
   const answerListener=onValue(
    ref(db,room+"/answer"),
    async snap=>{
     if(!snap.exists()||answerHandled||!adminPC)return;
-
     answerHandled=true;
-
     try{
      await adminPC.setRemoteDescription(
       new RTCSessionDescription(snap.val())
@@ -623,12 +1048,9 @@ async function connectObserver(){
 
   const offer=await adminPC.createOffer();
   await adminPC.setLocalDescription(offer);
-
   await set(ref(db,room+"/offer"),{
-   type:offer.type,
-   sdp:offer.sdp
+   type:offer.type,sdp:offer.sdp
   });
-
   videoStatus("OFFER SENT — WAITING FOR OBSERVER");
 
  }catch(e){
@@ -639,30 +1061,28 @@ async function connectObserver(){
 }
 
 async function disconnectObserver(){
-
  clearAdminListeners();
-
  if(adminPC){
   adminPC.close();
   adminPC=null;
  }
-
  remoteStream=null;
  $("liveVideo").srcObject=null;
+ $("broadcastVideo").srcObject=null;
 
  try{
   await set(ref(db,room+"/offer"),null);
   await set(ref(db,room+"/answer"),null);
   await set(ref(db,room+"/adminCandidates"),null);
- }catch(e){
-  console.log(e);
- }
+ }catch(e){console.log(e)}
 
  videoStatus("NOT CONNECTED");
 }
 
 $("connectBtn").onclick=connectObserver;
 $("disconnectBtn").onclick=disconnectObserver;
+
+$("bcPlayerTeam").addEventListener("change",renderBroadcastPlayerInputs);
 
 </script>
 </body>
